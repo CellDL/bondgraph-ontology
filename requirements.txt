@@ -1,0 +1,4 @@
+# Authoring and validation toolchain for the bond graph ontology.
+rdflib>=7.0
+owlready2>=0.47   # used only for the HermiT jar it bundles
+jdk4py            # bundled JRE; omit if a system JVM is on PATH

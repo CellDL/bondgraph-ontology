@@ -1,0 +1,331 @@
+@prefix bg: <https://w3id.org/bondgraph/core#> .
+@prefix bgb: <https://w3id.org/bondgraph/biochem#> .
+@prefix ex: <https://w3id.org/bondgraph/examples/reaction-chain#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<https://w3id.org/bondgraph/examples/reaction-chain> a owl:Ontology ;
+    rdfs:label "Exemplar: reversible reaction chain A = B = C"@en ;
+    owl:imports <https://w3id.org/bondgraph/biochem>,
+        <https://w3id.org/bondgraph/core> .
+
+ex:abcChain a owl:NamedIndividual,
+        bgb:ReactionNetwork ;
+    bg:hasBond ex:b1,
+        ex:b2,
+        ex:b3,
+        ex:b4,
+        ex:b5 ;
+    bg:hasElement ex:Ce_A,
+        ex:Ce_B,
+        ex:Ce_C,
+        ex:J_B,
+        ex:Re_r1,
+        ex:Re_r2 .
+
+ex:K_A a owl:NamedIndividual,
+        bgb:SpeciesThermodynamicConstant ;
+    bg:parameterValue 1e+03 ;
+    bg:unitCode "/mol"^^xsd:string .
+
+ex:K_B a owl:NamedIndividual,
+        bgb:SpeciesThermodynamicConstant ;
+    bg:parameterValue 1e+03 ;
+    bg:unitCode "/mol"^^xsd:string .
+
+ex:K_C a owl:NamedIndividual,
+        bgb:SpeciesThermodynamicConstant ;
+    bg:parameterValue 1e+03 ;
+    bg:unitCode "/mol"^^xsd:string .
+
+ex:b1 a owl:NamedIndividual,
+        bg:PowerBond ;
+    bg:hasEnd ex:p_A,
+        ex:p_r1_1 ;
+    bg:hasPowerSink ex:p_r1_1 ;
+    bg:hasPowerSource ex:p_A ;
+    bg:inEnergyDomain bg:chemicalDomain .
+
+ex:b2 a owl:NamedIndividual,
+        bg:PowerBond ;
+    bg:hasEnd ex:p_JB_1,
+        ex:p_r1_2 ;
+    bg:hasPowerSink ex:p_JB_1 ;
+    bg:hasPowerSource ex:p_r1_2 ;
+    bg:inEnergyDomain bg:chemicalDomain .
+
+ex:b3 a owl:NamedIndividual,
+        bg:PowerBond ;
+    bg:hasEnd ex:p_JB_2,
+        ex:p_r2_1 ;
+    bg:hasPowerSink ex:p_r2_1 ;
+    bg:hasPowerSource ex:p_JB_2 ;
+    bg:inEnergyDomain bg:chemicalDomain .
+
+ex:b4 a owl:NamedIndividual,
+        bg:PowerBond ;
+    bg:hasEnd ex:p_C,
+        ex:p_r2_2 ;
+    bg:hasPowerSink ex:p_C ;
+    bg:hasPowerSource ex:p_r2_2 ;
+    bg:inEnergyDomain bg:chemicalDomain .
+
+ex:b5 a owl:NamedIndividual,
+        bg:PowerBond ;
+    bg:hasEnd ex:p_B,
+        ex:p_JB_3 ;
+    bg:hasPowerSink ex:p_B ;
+    bg:hasPowerSource ex:p_JB_3 ;
+    bg:inEnergyDomain bg:chemicalDomain .
+
+ex:c_J_B a owl:NamedIndividual,
+        bg:CommonEffortConstraint ;
+    bg:constitutiveEquation "mu_B = mu_r1_2 = mu_r2_1 ; v_r1 - v_r2 - dq_B/dt = 0" .
+
+ex:e_p_A a owl:NamedIndividual,
+        bg:ChemicalPotential ;
+    bg:conjugateTo ex:f_p_A ;
+    bg:symbol "e_mu_A"^^xsd:string .
+
+ex:e_p_C a owl:NamedIndividual,
+        bg:ChemicalPotential ;
+    bg:conjugateTo ex:f_p_C ;
+    bg:symbol "e_mu_C"^^xsd:string .
+
+ex:e_p_JB_1 a owl:NamedIndividual,
+        bg:ChemicalPotential ;
+    bg:conjugateTo ex:f_p_JB_1 ;
+    bg:symbol "e_JB_1"^^xsd:string .
+
+ex:e_p_JB_2 a owl:NamedIndividual,
+        bg:ChemicalPotential ;
+    bg:conjugateTo ex:f_p_JB_2 ;
+    bg:symbol "e_JB_2"^^xsd:string .
+
+ex:e_p_JB_3 a owl:NamedIndividual,
+        bg:ChemicalPotential ;
+    bg:conjugateTo ex:f_p_JB_3 ;
+    bg:symbol "e_JB_3"^^xsd:string .
+
+ex:e_p_r1_1 a owl:NamedIndividual,
+        bg:ChemicalPotential ;
+    bg:conjugateTo ex:f_p_r1_1 ;
+    bg:symbol "e_r1_1"^^xsd:string .
+
+ex:e_p_r1_2 a owl:NamedIndividual,
+        bg:ChemicalPotential ;
+    bg:conjugateTo ex:f_p_r1_2 ;
+    bg:symbol "e_r1_2"^^xsd:string .
+
+ex:e_p_r2_1 a owl:NamedIndividual,
+        bg:ChemicalPotential ;
+    bg:conjugateTo ex:f_p_r2_1 ;
+    bg:symbol "e_r2_1"^^xsd:string .
+
+ex:e_p_r2_2 a owl:NamedIndividual,
+        bg:ChemicalPotential ;
+    bg:conjugateTo ex:f_p_r2_2 ;
+    bg:symbol "e_r2_2"^^xsd:string .
+
+ex:kappa_r1 a owl:NamedIndividual,
+        bgb:ReactionRateConstant ;
+    bg:parameterValue 2e+00 ;
+    bg:unitCode "mol/s"^^xsd:string .
+
+ex:kappa_r2 a owl:NamedIndividual,
+        bgb:ReactionRateConstant ;
+    bg:parameterValue 5e-01 ;
+    bg:unitCode "mol/s"^^xsd:string .
+
+ex:q_A a owl:NamedIndividual,
+        bg:MolarAmount ;
+    bg:initialValue 1e-03 ;
+    bg:integralOf ex:f_p_A ;
+    bg:symbol "q_A"^^xsd:string ;
+    bg:unitCode "mol"^^xsd:string .
+
+ex:q_B a owl:NamedIndividual,
+        bg:MolarAmount ;
+    bg:initialValue 1e-04 ;
+    bg:integralOf ex:f_p_B ;
+    bg:symbol "q_B"^^xsd:string ;
+    bg:unitCode "mol"^^xsd:string .
+
+ex:q_C a owl:NamedIndividual,
+        bg:MolarAmount ;
+    bg:initialValue 1e-05 ;
+    bg:integralOf ex:f_p_C ;
+    bg:symbol "q_C"^^xsd:string ;
+    bg:unitCode "mol"^^xsd:string .
+
+ex:Ce_A a owl:NamedIndividual,
+        bgb:SpeciesComponent ;
+    rdfs:label "species pool A"@en ;
+    bg:hasCausalForm bg:integralCausality ;
+    bg:hasGeneralizedDisplacement ex:q_A ;
+    bg:hasParameter ex:K_A ;
+    bg:inEnergyDomain bg:chemicalDomain .
+
+ex:Ce_B a owl:NamedIndividual,
+        bgb:SpeciesComponent ;
+    rdfs:label "species pool B"@en ;
+    bg:hasCausalForm bg:integralCausality ;
+    bg:hasGeneralizedDisplacement ex:q_B ;
+    bg:hasParameter ex:K_B ;
+    bg:inEnergyDomain bg:chemicalDomain .
+
+ex:Ce_C a owl:NamedIndividual,
+        bgb:SpeciesComponent ;
+    rdfs:label "species pool C"@en ;
+    bg:hasCausalForm bg:integralCausality ;
+    bg:hasGeneralizedDisplacement ex:q_C ;
+    bg:hasParameter ex:K_C ;
+    bg:inEnergyDomain bg:chemicalDomain .
+
+ex:e_p_B a owl:NamedIndividual,
+        bg:ChemicalPotential ;
+    bg:conjugateTo ex:f_p_B ;
+    bg:symbol "e_mu_B"^^xsd:string .
+
+ex:f_p_JB_1 a owl:NamedIndividual,
+        bg:MolarFlowRate ;
+    bg:symbol "f_JB_1"^^xsd:string .
+
+ex:f_p_JB_2 a owl:NamedIndividual,
+        bg:MolarFlowRate ;
+    bg:symbol "f_JB_2"^^xsd:string .
+
+ex:f_p_JB_3 a owl:NamedIndividual,
+        bg:MolarFlowRate ;
+    bg:symbol "f_JB_3"^^xsd:string .
+
+ex:f_p_r1_1 a owl:NamedIndividual,
+        bg:MolarFlowRate ;
+    bg:symbol "f_r1_1"^^xsd:string .
+
+ex:f_p_r1_2 a owl:NamedIndividual,
+        bg:MolarFlowRate ;
+    bg:symbol "f_r1_2"^^xsd:string .
+
+ex:f_p_r2_1 a owl:NamedIndividual,
+        bg:MolarFlowRate ;
+    bg:symbol "f_r2_1"^^xsd:string .
+
+ex:f_p_r2_2 a owl:NamedIndividual,
+        bg:MolarFlowRate ;
+    bg:symbol "f_r2_2"^^xsd:string .
+
+ex:p_A a owl:NamedIndividual,
+        bg:PowerPort ;
+    bg:hasEffort ex:e_p_A ;
+    bg:hasFlow ex:f_p_A ;
+    bg:inEnergyDomain bg:chemicalDomain ;
+    bg:portIndex "0"^^xsd:nonNegativeInteger ;
+    bg:portOf ex:Ce_A .
+
+ex:p_B a owl:NamedIndividual,
+        bg:PowerPort ;
+    bg:hasEffort ex:e_p_B ;
+    bg:hasFlow ex:f_p_B ;
+    bg:inEnergyDomain bg:chemicalDomain ;
+    bg:portIndex "0"^^xsd:nonNegativeInteger ;
+    bg:portOf ex:Ce_B .
+
+ex:p_C a owl:NamedIndividual,
+        bg:PowerPort ;
+    bg:hasEffort ex:e_p_C ;
+    bg:hasFlow ex:f_p_C ;
+    bg:inEnergyDomain bg:chemicalDomain ;
+    bg:portIndex "0"^^xsd:nonNegativeInteger ;
+    bg:portOf ex:Ce_C .
+
+ex:p_JB_1 a owl:NamedIndividual,
+        bg:PowerPort ;
+    bg:hasEffort ex:e_p_JB_1 ;
+    bg:hasFlow ex:f_p_JB_1 ;
+    bg:inEnergyDomain bg:chemicalDomain ;
+    bg:portIndex "0"^^xsd:nonNegativeInteger ;
+    bg:portOf ex:J_B .
+
+ex:p_JB_2 a owl:NamedIndividual,
+        bg:PowerPort ;
+    bg:hasEffort ex:e_p_JB_2 ;
+    bg:hasFlow ex:f_p_JB_2 ;
+    bg:inEnergyDomain bg:chemicalDomain ;
+    bg:portIndex "1"^^xsd:nonNegativeInteger ;
+    bg:portOf ex:J_B .
+
+ex:p_JB_3 a owl:NamedIndividual,
+        bg:PowerPort ;
+    bg:hasEffort ex:e_p_JB_3 ;
+    bg:hasFlow ex:f_p_JB_3 ;
+    bg:inEnergyDomain bg:chemicalDomain ;
+    bg:portIndex "2"^^xsd:nonNegativeInteger ;
+    bg:portOf ex:J_B .
+
+ex:p_r1_1 a owl:NamedIndividual,
+        bg:PowerPort ;
+    bg:hasEffort ex:e_p_r1_1 ;
+    bg:hasFlow ex:f_p_r1_1 ;
+    bg:inEnergyDomain bg:chemicalDomain ;
+    bg:portIndex "0"^^xsd:nonNegativeInteger ;
+    bg:portOf ex:Re_r1 .
+
+ex:p_r1_2 a owl:NamedIndividual,
+        bg:PowerPort ;
+    bg:hasEffort ex:e_p_r1_2 ;
+    bg:hasFlow ex:f_p_r1_2 ;
+    bg:inEnergyDomain bg:chemicalDomain ;
+    bg:portIndex "1"^^xsd:nonNegativeInteger ;
+    bg:portOf ex:Re_r1 .
+
+ex:p_r2_1 a owl:NamedIndividual,
+        bg:PowerPort ;
+    bg:hasEffort ex:e_p_r2_1 ;
+    bg:hasFlow ex:f_p_r2_1 ;
+    bg:inEnergyDomain bg:chemicalDomain ;
+    bg:portIndex "0"^^xsd:nonNegativeInteger ;
+    bg:portOf ex:Re_r2 .
+
+ex:p_r2_2 a owl:NamedIndividual,
+        bg:PowerPort ;
+    bg:hasEffort ex:e_p_r2_2 ;
+    bg:hasFlow ex:f_p_r2_2 ;
+    bg:inEnergyDomain bg:chemicalDomain ;
+    bg:portIndex "1"^^xsd:nonNegativeInteger ;
+    bg:portOf ex:Re_r2 .
+
+ex:Re_r1 a owl:NamedIndividual,
+        bgb:ReactionComponent ;
+    bg:hasParameter ex:kappa_r1 ;
+    bg:inEnergyDomain bg:chemicalDomain .
+
+ex:Re_r2 a owl:NamedIndividual,
+        bgb:ReactionComponent ;
+    bg:hasParameter ex:kappa_r2 ;
+    bg:inEnergyDomain bg:chemicalDomain .
+
+ex:f_p_A a owl:NamedIndividual,
+        bg:MolarFlowRate ;
+    bg:symbol "f_mu_A"^^xsd:string .
+
+ex:f_p_B a owl:NamedIndividual,
+        bg:MolarFlowRate ;
+    bg:symbol "f_mu_B"^^xsd:string .
+
+ex:f_p_C a owl:NamedIndividual,
+        bg:MolarFlowRate ;
+    bg:symbol "f_mu_C"^^xsd:string .
+
+ex:J_B a owl:NamedIndividual,
+        bg:ZeroJunction ;
+    rdfs:label "common-potential node for species B"@en ;
+    bg:hasCommonEffort ex:e_p_B ;
+    bg:hasConstitutiveRelation ex:c_J_B ;
+    bg:inEnergyDomain bg:chemicalDomain .
+
+[] a owl:AllDifferent ;
+    owl:distinctMembers ( ex:abcChain ex:Ce_A ex:q_A ex:K_A ex:p_A ex:e_p_A ex:f_p_A ex:Ce_B ex:q_B ex:K_B ex:p_B ex:e_p_B ex:f_p_B ex:Ce_C ex:q_C ex:K_C ex:p_C ex:e_p_C ex:f_p_C ex:Re_r1 ex:kappa_r1 ex:p_r1_1 ex:e_p_r1_1 ex:f_p_r1_1 ex:p_r1_2 ex:e_p_r1_2 ex:f_p_r1_2 ex:Re_r2 ex:kappa_r2 ex:p_r2_1 ex:e_p_r2_1 ex:f_p_r2_1 ex:p_r2_2 ex:e_p_r2_2 ex:f_p_r2_2 ex:J_B ex:c_J_B ex:p_JB_1 ex:e_p_JB_1 ex:f_p_JB_1 ex:p_JB_2 ex:e_p_JB_2 ex:f_p_JB_2 ex:p_JB_3 ex:e_p_JB_3 ex:f_p_JB_3 ex:b1 ex:b2 ex:b3 ex:b4 ex:b5 ) .
+

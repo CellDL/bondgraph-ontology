@@ -1,0 +1,111 @@
+@prefix bg: <https://w3id.org/bondgraph/core#> .
+@prefix ex: <https://w3id.org/bondgraph/tests/conflict-two-effort-sources#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<https://w3id.org/bondgraph/tests/conflict-two-effort-sources> a owl:Ontology ;
+    rdfs:label "Causality conflict: two effort sources on one 0-junction"@en ;
+    owl:imports <https://w3id.org/bondgraph/core> .
+
+ex:b1 a owl:NamedIndividual,
+        bg:PowerBond ;
+    bg:hasEnd ex:p_j1,
+        ex:p_s1 ;
+    bg:hasPowerSink ex:p_j1 ;
+    bg:hasPowerSource ex:p_s1 ;
+    bg:inEnergyDomain bg:electricalDomain .
+
+ex:b2 a owl:NamedIndividual,
+        bg:PowerBond ;
+    bg:hasEnd ex:p_j2,
+        ex:p_s2 ;
+    bg:hasPowerSink ex:p_j2 ;
+    bg:hasPowerSource ex:p_s2 ;
+    bg:inEnergyDomain bg:electricalDomain .
+
+ex:Se1 a owl:NamedIndividual,
+        bg:EffortSource .
+
+ex:Se2 a owl:NamedIndividual,
+        bg:EffortSource .
+
+ex:c_J a owl:NamedIndividual,
+        bg:CommonEffortConstraint .
+
+ex:e_p_j1 a owl:NamedIndividual,
+        bg:Voltage ;
+    bg:conjugateTo ex:f_p_j1 ;
+    bg:symbol "e_j1"^^xsd:string .
+
+ex:e_p_j2 a owl:NamedIndividual,
+        bg:Voltage ;
+    bg:conjugateTo ex:f_p_j2 ;
+    bg:symbol "e_j2"^^xsd:string .
+
+ex:e_p_s1 a owl:NamedIndividual,
+        bg:Voltage ;
+    bg:conjugateTo ex:f_p_s1 ;
+    bg:symbol "e_s1"^^xsd:string .
+
+ex:e_p_s2 a owl:NamedIndividual,
+        bg:Voltage ;
+    bg:conjugateTo ex:f_p_s2 ;
+    bg:symbol "e_s2"^^xsd:string .
+
+ex:J a owl:NamedIndividual,
+        bg:ZeroJunction ;
+    bg:hasConstitutiveRelation ex:c_J .
+
+ex:f_p_j1 a owl:NamedIndividual,
+        bg:ElectricCurrent ;
+    bg:symbol "f_j1"^^xsd:string .
+
+ex:f_p_j2 a owl:NamedIndividual,
+        bg:ElectricCurrent ;
+    bg:symbol "f_j2"^^xsd:string .
+
+ex:f_p_s1 a owl:NamedIndividual,
+        bg:ElectricCurrent ;
+    bg:symbol "f_s1"^^xsd:string .
+
+ex:f_p_s2 a owl:NamedIndividual,
+        bg:ElectricCurrent ;
+    bg:symbol "f_s2"^^xsd:string .
+
+ex:p_j1 a owl:NamedIndividual,
+        bg:PowerPort ;
+    bg:hasEffort ex:e_p_j1 ;
+    bg:hasFlow ex:f_p_j1 ;
+    bg:inEnergyDomain bg:electricalDomain ;
+    bg:portIndex "0"^^xsd:nonNegativeInteger ;
+    bg:portOf ex:J .
+
+ex:p_j2 a owl:NamedIndividual,
+        bg:PowerPort ;
+    bg:hasEffort ex:e_p_j2 ;
+    bg:hasFlow ex:f_p_j2 ;
+    bg:inEnergyDomain bg:electricalDomain ;
+    bg:portIndex "1"^^xsd:nonNegativeInteger ;
+    bg:portOf ex:J .
+
+ex:p_s1 a owl:NamedIndividual,
+        bg:PowerPort ;
+    bg:hasEffort ex:e_p_s1 ;
+    bg:hasFlow ex:f_p_s1 ;
+    bg:inEnergyDomain bg:electricalDomain ;
+    bg:portIndex "0"^^xsd:nonNegativeInteger ;
+    bg:portOf ex:Se1 .
+
+ex:p_s2 a owl:NamedIndividual,
+        bg:PowerPort ;
+    bg:hasEffort ex:e_p_s2 ;
+    bg:hasFlow ex:f_p_s2 ;
+    bg:inEnergyDomain bg:electricalDomain ;
+    bg:portIndex "0"^^xsd:nonNegativeInteger ;
+    bg:portOf ex:Se2 .
+
+[] a owl:AllDifferent ;
+    owl:distinctMembers ( ex:J ex:c_J ex:Se1 ex:p_s1 ex:e_p_s1 ex:f_p_s1 ex:p_j1 ex:e_p_j1 ex:f_p_j1 ex:b1 ex:Se2 ex:p_s2 ex:e_p_s2 ex:f_p_s2 ex:p_j2 ex:e_p_j2 ex:f_p_j2 ex:b2 ) .
+

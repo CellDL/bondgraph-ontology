@@ -1,0 +1,984 @@
+@prefix bg:   <https://w3id.org/bondgraph/core#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix dct:  <http://purl.org/dc/terms/> .
+@prefix sbo:  <http://biomodels.net/SBO/SBO_> .
+
+################################################################
+# Ontology header
+################################################################
+
+<https://w3id.org/bondgraph/core> a owl:Ontology ;
+  owl:versionIRI <https://w3id.org/bondgraph/core/0.1.0> ;
+  dct:title "Bond Graph Ontology Core"@en ;
+  dct:description """A domain-neutral OWL 2 DL core for the bond graph formalism: bond
+graphs, power bonds, ports, the standard element set (R, C, I, Se, Sf, TF, GY, 0, 1),
+the power and energy variables, causality, and energy-domain classification.
+
+The core is self-contained: it imports nothing. Correspondences to external
+vocabularies are carried as skos:closeMatch / skos:relatedMatch annotations only, so
+that a mapping module can be layered on top without re-axiomatising anything here.
+
+Scope note. OWL cannot express the numeric constitutive relations of a bond graph
+(e = R f, de/dt = f/C, sum of flows = 0, ...). What the core does express is the
+structure those relations presuppose: element arity, port-to-bond attachment, the
+sign convention on power, the conjugate variable pairs, and -- most usefully -- the
+propagation rules of causality, which are purely combinatorial and therefore
+decidable. A causality conflict in a modelled graph surfaces as an OWL
+inconsistency. Numeric semantics is attached by reference, as bg:constitutiveEquation
+annotations on bg:ConstitutiveRelation individuals and classes."""@en ;
+  skos:editorialNote """Version 0.1.0, a first draft of the core. The namespace
+https://w3id.org/bondgraph/core# is a placeholder and should be rebased onto a
+registered, dereferenceable IRI before publication; no w3id redirect has been
+registered for it. No licence has been asserted -- set dct:license before release."""@en ;
+  rdfs:seeAlso "Paynter, H.M. (1961) Analysis and Design of Engineering Systems"@en ,
+               "Karnopp, Margolis & Rosenberg, System Dynamics: Modeling, Simulation, and Control of Mechatronic Systems"@en ,
+               "Gawthrop & Crampin (2014) Energy-based analysis of biochemical cycles using bond graphs"@en ,
+               "Cook, Bookstein & Gennari (2011) Physical properties of biological entities: an introduction to the Ontology of Physics for Biology"@en .
+
+################################################################
+# Annotation properties
+################################################################
+
+dct:title       a owl:AnnotationProperty .
+dct:description a owl:AnnotationProperty .
+dct:license     a owl:AnnotationProperty .
+skos:prefLabel     a owl:AnnotationProperty .
+skos:altLabel      a owl:AnnotationProperty .
+skos:definition    a owl:AnnotationProperty .
+skos:example       a owl:AnnotationProperty .
+skos:scopeNote     a owl:AnnotationProperty .
+skos:editorialNote a owl:AnnotationProperty .
+skos:closeMatch    a owl:AnnotationProperty .
+skos:relatedMatch  a owl:AnnotationProperty .
+
+bg:standardSymbol a owl:AnnotationProperty ;
+  rdfs:label "standard symbol"@en ;
+  skos:definition "The glyph used for this construct in conventional bond graph notation, e.g. \"R\", \"Se\", \"0\"."@en .
+
+bg:constitutiveEquation a owl:AnnotationProperty ;
+  rdfs:label "constitutive equation"@en ;
+  skos:definition "The numeric relation that members of this class satisfy, written as a human-readable formula. Carried as an annotation because OWL has no arithmetic; a computational tool is expected to parse or dereference it."@en .
+
+bg:causalityRule a owl:AnnotationProperty ;
+  rdfs:label "causality rule"@en ;
+  skos:definition "The causality assignment rule for this element, stated informally. Where the rule is combinatorial it is additionally axiomatised in the logic."@en .
+
+bg:ucumUnit a owl:AnnotationProperty ;
+  rdfs:label "UCUM unit"@en ;
+  skos:definition "The coherent SI unit of this quantity, as a UCUM case-sensitive code. A string rather than an IRI, so that the core carries no dependency on a units ontology; QUDT quantity kinds are the recommended target for a mapping module."@en .
+
+bg:alignmentNote a owl:AnnotationProperty ;
+  rdfs:label "alignment note"@en ;
+  skos:definition "Prose describing an intended correspondence to an external vocabulary whose IRI has not been verified, and which is therefore deliberately not asserted as a skos match."@en .
+
+################################################################
+# Top-level partition
+################################################################
+
+bg:BondGraphEntity a owl:Class ;
+  rdfs:label "bond graph entity"@en ;
+  skos:definition "Anything in the subject matter of this ontology: a structural part of a bond graph, a quantity it carries, or one of the classifiers used to describe it."@en .
+
+bg:StructuralEntity a owl:Class ;
+  rdfs:subClassOf bg:BondGraphEntity ;
+  rdfs:label "structural entity"@en ;
+  skos:definition "A part of the graph proper: a bond graph, an element, a port, or a bond."@en .
+
+bg:Quantity a owl:Class ;
+  rdfs:subClassOf bg:BondGraphEntity ;
+  rdfs:label "quantity"@en ;
+  skos:definition "A physical quantity appearing in a bond graph: a power variable, an energy variable, a constitutive parameter, or power/energy itself. Instances are quantity occurrences in a particular model, not quantity kinds."@en ;
+  skos:scopeNote "A bg:Quantity instance is the variable 'the pressure at port p3 of this model', not the universal 'pressure'. The quantity kind is given by the instance's class."@en .
+
+bg:ConstitutiveRelation a owl:Class ;
+  rdfs:subClassOf bg:BondGraphEntity ;
+  rdfs:label "constitutive relation"@en ;
+  skos:definition "The relation an element imposes among the quantities at its ports and its state variables."@en ;
+  skos:closeMatch sbo:0000001 .
+
+bg:EnergyDomain a owl:Class ;
+  rdfs:subClassOf bg:BondGraphEntity ;
+  rdfs:label "energy domain"@en ;
+  skos:definition "A physical domain, individuated by its conjugate effort-flow pair, whose power is commensurable with that of every other domain. The class is left open so that further domains can be added by extension."@en .
+
+bg:Causality a owl:Class ;
+  rdfs:subClassOf bg:BondGraphEntity ;
+  rdfs:label "causality"@en ;
+  skos:definition "The computational orientation of a power port: which of the two conjugate variables the element at that port determines, and which it accepts as given."@en ;
+  owl:equivalentClass [ a owl:Class ; owl:oneOf ( bg:effortOut bg:flowOut ) ] .
+
+bg:CausalForm a owl:Class ;
+  rdfs:subClassOf bg:BondGraphEntity ;
+  rdfs:label "causal form"@en ;
+  skos:definition "Whether a storage element's constitutive relation is used in integrated or differentiated form."@en ;
+  owl:equivalentClass [ a owl:Class ; owl:oneOf ( bg:integralCausality bg:derivativeCausality ) ] .
+
+[] a owl:AllDisjointClasses ;
+  owl:members ( bg:StructuralEntity bg:Quantity bg:ConstitutiveRelation
+                bg:EnergyDomain bg:Causality bg:CausalForm ) .
+
+################################################################
+# Object properties -- composition
+################################################################
+
+bg:hasComponent a owl:ObjectProperty ;
+  rdfs:label "has component"@en ;
+  rdfs:domain bg:BondGraph ;
+  rdfs:range bg:StructuralEntity ;
+  owl:inverseOf bg:componentOf ;
+  skos:definition "Relates a bond graph to an element or bond belonging to it."@en .
+
+bg:componentOf a owl:ObjectProperty ;
+  rdfs:label "component of"@en .
+
+bg:hasElement a owl:ObjectProperty ;
+  rdfs:subPropertyOf bg:hasComponent ;
+  rdfs:label "has element"@en ;
+  rdfs:domain bg:BondGraph ;
+  rdfs:range bg:BondGraphElement .
+
+bg:hasBond a owl:ObjectProperty ;
+  rdfs:subPropertyOf bg:hasComponent ;
+  rdfs:label "has bond"@en ;
+  rdfs:domain bg:BondGraph ;
+  rdfs:range bg:Bond .
+
+bg:encapsulates a owl:ObjectProperty , owl:FunctionalProperty ;
+  rdfs:label "encapsulates"@en ;
+  rdfs:domain bg:CompositeElement ;
+  rdfs:range bg:BondGraph ;
+  skos:definition "Relates a composite element to the bond graph that expands it. This is the word-bond-graph relation: the composite stands in for its expansion at the next level of detail."@en .
+
+################################################################
+# Object properties -- ports and bonds
+################################################################
+
+bg:hasPort a owl:ObjectProperty ;
+  rdfs:label "has port"@en ;
+  rdfs:domain bg:BondGraphElement ;
+  rdfs:range bg:Port ;
+  owl:inverseOf bg:portOf .
+
+bg:portOf a owl:ObjectProperty , owl:FunctionalProperty ;
+  rdfs:label "port of"@en ;
+  skos:definition "Relates a port to the one element it belongs to. Functional: ports are not shared between elements."@en .
+
+bg:hasEnd a owl:ObjectProperty ;
+  rdfs:label "has end"@en ;
+  rdfs:domain bg:Bond ;
+  rdfs:range bg:Port ;
+  owl:inverseOf bg:attachedTo ;
+  skos:definition "Relates a bond to one of the two ports it joins."@en .
+
+bg:attachedTo a owl:ObjectProperty , owl:FunctionalProperty ;
+  rdfs:label "attached to"@en ;
+  skos:definition "Relates a port to the bond attached to it. Functional: a port carries at most one bond, which is what makes a dangling port a well-defined notion."@en .
+
+bg:hasPowerSource a owl:ObjectProperty , owl:FunctionalProperty ;
+  rdfs:subPropertyOf bg:hasEnd ;
+  rdfs:label "has power source end"@en ;
+  owl:propertyDisjointWith bg:hasPowerSink ;
+  skos:definition "The end of a bond from which positive power flows -- the tail of the half-arrow."@en .
+
+bg:hasPowerSink a owl:ObjectProperty , owl:FunctionalProperty ;
+  rdfs:subPropertyOf bg:hasEnd ;
+  rdfs:label "has power sink end"@en ;
+  skos:definition "The end of a bond towards which positive power flows -- the head of the half-arrow. Fixing this end fixes the sign convention for the bond: e*f > 0 means power is transferred from the source end to the sink end."@en .
+
+bg:connectsElement a owl:ObjectProperty ;
+  rdfs:label "connects element"@en ;
+  owl:propertyChainAxiom ( bg:hasEnd bg:portOf ) ;
+  skos:definition "Relates a bond to an element it terminates on. Entailed from the bond's ends and their owning elements; not normally asserted."@en .
+
+bg:bondedTo a owl:ObjectProperty , owl:SymmetricObjectProperty ;
+  rdfs:label "bonded to"@en ;
+  rdfs:domain bg:BondGraphElement ;
+  rdfs:range bg:BondGraphElement ;
+  owl:propertyChainAxiom ( bg:hasPort bg:attachedTo bg:hasEnd bg:portOf ) ;
+  skos:definition "Relates two elements joined by a bond. Entailed, not asserted. Reflexive on any element with two ports on the same bond, which is why it is not declared irreflexive."@en .
+
+################################################################
+# Object properties -- quantities, causality, domain
+################################################################
+
+bg:hasEffort a owl:ObjectProperty , owl:FunctionalProperty ;
+  rdfs:label "has effort"@en ;
+  rdfs:domain bg:PowerPort ;
+  rdfs:range bg:Effort .
+
+bg:hasFlow a owl:ObjectProperty , owl:FunctionalProperty ;
+  rdfs:label "has flow"@en ;
+  rdfs:domain bg:PowerPort ;
+  rdfs:range bg:Flow .
+
+bg:conjugateTo a owl:ObjectProperty , owl:SymmetricObjectProperty , owl:IrreflexiveObjectProperty ;
+  rdfs:label "conjugate to"@en ;
+  rdfs:domain bg:PowerVariable ;
+  rdfs:range bg:PowerVariable ;
+  skos:definition "Relates an effort to the flow with which it forms a power-conjugate pair, so that their product is the power transferred."@en .
+
+bg:integralOf a owl:ObjectProperty , owl:FunctionalProperty ;
+  rdfs:label "integral of"@en ;
+  rdfs:domain bg:EnergyVariable ;
+  rdfs:range bg:PowerVariable ;
+  skos:definition "Relates a generalized displacement to the flow whose time integral it is, or a generalized momentum to the effort whose time integral it is."@en .
+
+bg:hasStateVariable a owl:ObjectProperty ;
+  rdfs:label "has state variable"@en ;
+  rdfs:domain bg:StorageElement ;
+  rdfs:range bg:EnergyVariable .
+
+bg:hasGeneralizedDisplacement a owl:ObjectProperty , owl:FunctionalProperty ;
+  rdfs:subPropertyOf bg:hasStateVariable ;
+  rdfs:label "has generalized displacement"@en ;
+  rdfs:range bg:GeneralizedDisplacement .
+
+bg:hasGeneralizedMomentum a owl:ObjectProperty , owl:FunctionalProperty ;
+  rdfs:subPropertyOf bg:hasStateVariable ;
+  rdfs:label "has generalized momentum"@en ;
+  rdfs:range bg:GeneralizedMomentum .
+
+bg:hasCommonEffort a owl:ObjectProperty , owl:FunctionalProperty ;
+  rdfs:label "has common effort"@en ;
+  rdfs:domain bg:ZeroJunction ;
+  rdfs:range bg:Effort ;
+  skos:definition "The single effort shared by every port of a 0-junction."@en .
+
+bg:hasCommonFlow a owl:ObjectProperty , owl:FunctionalProperty ;
+  rdfs:label "has common flow"@en ;
+  rdfs:domain bg:OneJunction ;
+  rdfs:range bg:Flow ;
+  skos:definition "The single flow shared by every port of a 1-junction."@en .
+
+bg:hasParameter a owl:ObjectProperty ;
+  rdfs:label "has parameter"@en ;
+  rdfs:domain bg:BondGraphElement ;
+  rdfs:range bg:ConstitutiveParameter .
+
+bg:hasConstitutiveRelation a owl:ObjectProperty ;
+  rdfs:label "has constitutive relation"@en ;
+  rdfs:domain bg:BondGraphElement ;
+  rdfs:range bg:ConstitutiveRelation .
+
+bg:hasCausality a owl:ObjectProperty , owl:FunctionalProperty ;
+  rdfs:label "has causality"@en ;
+  rdfs:domain bg:PowerPort ;
+  rdfs:range bg:Causality ;
+  skos:definition "Assigns a causality to a power port. Functional, so asserting both causalities on one port is inconsistent. The domain restriction means that asserting a causality on a signal port is also inconsistent: signal ports have inherent direction instead."@en .
+
+bg:hasCausalForm a owl:ObjectProperty , owl:FunctionalProperty ;
+  rdfs:label "has causal form"@en ;
+  rdfs:domain bg:StorageElement ;
+  rdfs:range bg:CausalForm .
+
+bg:inEnergyDomain a owl:ObjectProperty , owl:FunctionalProperty ;
+  rdfs:label "in energy domain"@en ;
+  rdfs:range bg:EnergyDomain ;
+  skos:definition "Assigns a power port, power bond, element or quantity to an energy domain."@en ;
+  skos:editorialNote "The core does not require a bond's domain to agree with its ports' domains; that is a closed-world integrity constraint and belongs in a SHACL shape, not in the OWL axiomatisation."@en .
+
+################################################################
+# Datatype properties
+################################################################
+
+bg:parameterValue a owl:DatatypeProperty , owl:FunctionalProperty ;
+  rdfs:label "parameter value"@en ;
+  rdfs:domain bg:Quantity ;
+  rdfs:range xsd:double .
+
+bg:initialValue a owl:DatatypeProperty , owl:FunctionalProperty ;
+  rdfs:label "initial value"@en ;
+  rdfs:domain bg:EnergyVariable ;
+  rdfs:range xsd:double ;
+  skos:definition "The value of a state variable at the start of a simulation."@en .
+
+bg:unitCode a owl:DatatypeProperty , owl:FunctionalProperty ;
+  rdfs:label "unit code"@en ;
+  rdfs:domain bg:Quantity ;
+  rdfs:range xsd:string ;
+  skos:definition "The unit in which parameterValue or initialValue is expressed, as a UCUM case-sensitive code."@en .
+
+bg:symbol a owl:DatatypeProperty ;
+  rdfs:label "symbol"@en ;
+  rdfs:domain bg:BondGraphEntity ;
+  rdfs:range xsd:string ;
+  skos:definition "The symbol used for this individual in the equations of a particular model."@en .
+
+bg:portIndex a owl:DatatypeProperty , owl:FunctionalProperty ;
+  rdfs:label "port index"@en ;
+  rdfs:domain bg:Port ;
+  rdfs:range xsd:nonNegativeInteger ;
+  skos:definition "Position of a port in its element's port ordering. Required wherever the constitutive relation is not symmetric in its ports -- a transformer, a gyrator, a reaction component."@en .
+
+################################################################
+# Bond graph
+################################################################
+
+bg:BondGraph a owl:Class ;
+  rdfs:subClassOf bg:StructuralEntity ;
+  rdfs:label "bond graph"@en ;
+  skos:definition "A directed multigraph whose vertices are elements and whose edges are bonds, each bond carrying a conjugate effort-flow pair, such that the net power into every element is accounted for by its constitutive relation."@en ;
+  rdfs:subClassOf [ a owl:Restriction ;
+      owl:onProperty bg:hasComponent ;
+      owl:allValuesFrom [ a owl:Class ; owl:unionOf ( bg:BondGraphElement bg:Bond ) ] ] .
+
+bg:FullyCausalBondGraph a owl:Class ;
+  rdfs:label "fully causal bond graph"@en ;
+  skos:definition "A bond graph in which every power port of every element has been assigned a causality. The result of a completed causality assignment pass."@en ;
+  owl:equivalentClass [ a owl:Class ; owl:intersectionOf ( bg:BondGraph
+      [ a owl:Restriction ;
+        owl:onProperty bg:hasElement ;
+        owl:allValuesFrom [ a owl:Restriction ;
+            owl:onProperty bg:hasPort ;
+            owl:allValuesFrom [ a owl:Class ; owl:unionOf ( bg:SignalPort bg:CausalPowerPort ) ] ] ] ) ] .
+
+bg:ModelWithDerivativeCausality a owl:Class ;
+  rdfs:label "model with derivative causality"@en ;
+  skos:definition "A bond graph containing at least one storage element in derivative causality, and therefore not reducible to an explicit ordinary differential equation system without further treatment."@en ;
+  owl:equivalentClass [ a owl:Class ; owl:intersectionOf ( bg:BondGraph
+      [ a owl:Restriction ;
+        owl:onProperty bg:hasElement ;
+        owl:someValuesFrom [ a owl:Class ; owl:intersectionOf ( bg:StorageElement
+            [ a owl:Restriction ; owl:onProperty bg:hasCausalForm ; owl:hasValue bg:derivativeCausality ] ) ] ] ) ] .
+
+################################################################
+# Ports
+################################################################
+
+bg:Port a owl:Class ;
+  rdfs:subClassOf bg:StructuralEntity ;
+  rdfs:label "port"@en ;
+  skos:definition "The place on an element at which a bond may be attached."@en ;
+  rdfs:subClassOf [ a owl:Restriction ;
+      owl:onProperty bg:portOf ; owl:someValuesFrom bg:BondGraphElement ] ,
+    [ a owl:Restriction ;
+      owl:onProperty bg:attachedTo ; owl:maxCardinality "1"^^xsd:nonNegativeInteger ] .
+
+bg:PowerPort a owl:Class ;
+  rdfs:subClassOf bg:Port ;
+  rdfs:label "power port"@en ;
+  skos:definition "A port at which energy is exchanged, carrying one effort and one conjugate flow."@en ;
+  rdfs:subClassOf
+    [ a owl:Restriction ; owl:onProperty bg:hasEffort ;
+      owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ; owl:onClass bg:Effort ] ,
+    [ a owl:Restriction ; owl:onProperty bg:hasFlow ;
+      owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ; owl:onClass bg:Flow ] ,
+    [ a owl:Restriction ; owl:onProperty bg:inEnergyDomain ;
+      owl:someValuesFrom bg:EnergyDomain ] .
+
+bg:SignalPort a owl:Class ;
+  rdfs:subClassOf bg:Port ;
+  rdfs:label "signal port"@en ;
+  skos:definition "A port at which a quantity is read or written without energy transfer; the terminus of an activated bond."@en .
+
+bg:InputSignalPort a owl:Class ; rdfs:subClassOf bg:SignalPort ;
+  rdfs:label "input signal port"@en .
+bg:OutputSignalPort a owl:Class ; rdfs:subClassOf bg:SignalPort ;
+  rdfs:label "output signal port"@en .
+
+[] a owl:AllDisjointClasses ; owl:members ( bg:PowerPort bg:SignalPort ) .
+[] a owl:AllDisjointClasses ; owl:members ( bg:InputSignalPort bg:OutputSignalPort ) .
+
+bg:EffortDeterminingPort a owl:Class ;
+  rdfs:label "effort-determining port"@en ;
+  skos:altLabel "effort-out port"@en ;
+  skos:definition "A power port whose element computes the effort and imposes it on the bond, accepting the flow as given. In conventional notation the causal stroke is at the far end of the bond."@en ;
+  owl:equivalentClass [ a owl:Class ; owl:intersectionOf ( bg:PowerPort
+      [ a owl:Restriction ; owl:onProperty bg:hasCausality ; owl:hasValue bg:effortOut ] ) ] .
+
+bg:FlowDeterminingPort a owl:Class ;
+  rdfs:label "flow-determining port"@en ;
+  skos:altLabel "flow-out port"@en ;
+  skos:definition "A power port whose element computes the flow and imposes it on the bond, accepting the effort as given. In conventional notation the causal stroke is at this end of the bond."@en ;
+  owl:equivalentClass [ a owl:Class ; owl:intersectionOf ( bg:PowerPort
+      [ a owl:Restriction ; owl:onProperty bg:hasCausality ; owl:hasValue bg:flowOut ] ) ] .
+
+bg:CausalPowerPort a owl:Class ;
+  rdfs:label "causal power port"@en ;
+  skos:definition "A power port that has been assigned a causality."@en ;
+  owl:equivalentClass [ a owl:Class ; owl:intersectionOf ( bg:PowerPort
+      [ a owl:Restriction ; owl:onProperty bg:hasCausality ; owl:someValuesFrom bg:Causality ] ) ] .
+
+bg:DanglingPort a owl:Class ;
+  rdfs:label "dangling port"@en ;
+  skos:definition "A port with no bond attached. Dangling power ports are the external interface of a composite element; a dangling power port on a primitive element is normally a modelling error."@en ;
+  owl:equivalentClass [ a owl:Class ; owl:intersectionOf ( bg:Port
+      [ a owl:Class ; owl:complementOf
+        [ a owl:Restriction ; owl:onProperty bg:attachedTo ; owl:someValuesFrom bg:Bond ] ] ) ] .
+
+################################################################
+# Bonds
+################################################################
+
+bg:Bond a owl:Class ;
+  rdfs:subClassOf bg:StructuralEntity ;
+  rdfs:label "bond"@en ;
+  skos:definition "An edge of a bond graph, joining exactly two ports."@en ;
+  rdfs:subClassOf [ a owl:Restriction ; owl:onProperty bg:hasEnd ;
+      owl:qualifiedCardinality "2"^^xsd:nonNegativeInteger ; owl:onClass bg:Port ] .
+
+bg:PowerBond a owl:Class ;
+  rdfs:subClassOf bg:Bond ;
+  rdfs:label "power bond"@en ;
+  skos:altLabel "energy bond"@en ;
+  skos:definition "A bond joining two power ports, along which effort and flow are transmitted without loss or storage, so that the power leaving one end equals the power entering the other."@en ;
+  bg:constitutiveEquation "e_source = e_sink ; f_source = f_sink ; P = e*f" ;
+  rdfs:subClassOf
+    [ a owl:Restriction ; owl:onProperty bg:hasEnd ;
+      owl:qualifiedCardinality "2"^^xsd:nonNegativeInteger ; owl:onClass bg:PowerPort ] ,
+    [ a owl:Restriction ; owl:onProperty bg:hasPowerSink ;
+      owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ; owl:onClass bg:PowerPort ] ,
+    [ a owl:Restriction ; owl:onProperty bg:hasPowerSource ;
+      owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ; owl:onClass bg:PowerPort ] ,
+    [ a owl:Restriction ; owl:onProperty bg:inEnergyDomain ;
+      owl:someValuesFrom bg:EnergyDomain ] ,
+    # The causality axiom: exactly one end of a power bond determines the effort and
+    # the other determines the flow. Asserted unconditionally, because it holds of the
+    # formalism whether or not a modeller has labelled the strokes. Two
+    # effort-determining ends on one bond therefore entails that the two ends are the
+    # same port, which contradicts the cardinality above -- a causality conflict.
+    [ a owl:Restriction ; owl:onProperty bg:hasEnd ;
+      owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ; owl:onClass bg:EffortDeterminingPort ] ,
+    [ a owl:Restriction ; owl:onProperty bg:hasEnd ;
+      owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ; owl:onClass bg:FlowDeterminingPort ] ;
+  bg:causalityRule "Exactly one end is effort-determining and the other flow-determining."@en .
+
+bg:SignalBond a owl:Class ;
+  rdfs:subClassOf bg:Bond ;
+  rdfs:label "signal bond"@en ;
+  skos:altLabel "activated bond"@en ;
+  skos:definition "A bond that transmits one variable as information without energy transfer, drawn with a full arrow. Used to modulate an element."@en ;
+  rdfs:subClassOf
+    [ a owl:Restriction ; owl:onProperty bg:hasEnd ;
+      owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ; owl:onClass bg:OutputSignalPort ] ,
+    [ a owl:Restriction ; owl:onProperty bg:hasEnd ;
+      owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ; owl:onClass bg:InputSignalPort ] .
+
+[] a owl:AllDisjointClasses ; owl:members ( bg:PowerBond bg:SignalBond ) .
+
+################################################################
+# Elements -- arity
+################################################################
+
+bg:BondGraphElement a owl:Class ;
+  rdfs:subClassOf bg:StructuralEntity ;
+  rdfs:label "bond graph element"@en ;
+  skos:definition "A vertex of a bond graph: a construct with ports, whose constitutive relation constrains the quantities at them."@en ;
+  rdfs:subClassOf [ a owl:Restriction ; owl:onProperty bg:hasPort ;
+      owl:someValuesFrom bg:Port ] .
+
+bg:OnePortElement a owl:Class ;
+  rdfs:label "one-port element"@en ;
+  owl:equivalentClass [ a owl:Class ; owl:intersectionOf ( bg:BondGraphElement
+      [ a owl:Restriction ; owl:onProperty bg:hasPort ;
+        owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ; owl:onClass bg:PowerPort ] ) ] .
+
+bg:TwoPortElement a owl:Class ;
+  rdfs:label "two-port element"@en ;
+  owl:equivalentClass [ a owl:Class ; owl:intersectionOf ( bg:BondGraphElement
+      [ a owl:Restriction ; owl:onProperty bg:hasPort ;
+        owl:qualifiedCardinality "2"^^xsd:nonNegativeInteger ; owl:onClass bg:PowerPort ] ) ] .
+
+bg:MultiPortElement a owl:Class ;
+  rdfs:label "multiport element"@en ;
+  skos:definition "An element with three or more power ports."@en ;
+  owl:equivalentClass [ a owl:Class ; owl:intersectionOf ( bg:BondGraphElement
+      [ a owl:Restriction ; owl:onProperty bg:hasPort ;
+        owl:minQualifiedCardinality "3"^^xsd:nonNegativeInteger ; owl:onClass bg:PowerPort ] ) ] .
+
+bg:ModulatedElement a owl:Class ;
+  rdfs:label "modulated element"@en ;
+  skos:definition "An element one of whose parameters is set by an incoming signal rather than being constant."@en ;
+  owl:equivalentClass [ a owl:Class ; owl:intersectionOf ( bg:BondGraphElement
+      [ a owl:Restriction ; owl:onProperty bg:hasPort ;
+        owl:someValuesFrom bg:InputSignalPort ] ) ] .
+
+################################################################
+# Elements -- the standard set
+################################################################
+
+bg:StorageElement a owl:Class ;
+  rdfs:subClassOf bg:BondGraphElement ;
+  rdfs:label "storage element"@en ;
+  skos:definition "An element that accumulates energy in a state variable and returns it without loss."@en ;
+  rdfs:subClassOf
+    [ a owl:Restriction ; owl:onProperty bg:hasStateVariable ; owl:someValuesFrom bg:EnergyVariable ] ,
+    [ a owl:Restriction ; owl:onProperty bg:hasCausalForm ; owl:someValuesFrom bg:CausalForm ] .
+
+bg:CapacitiveStorage a owl:Class ;
+  rdfs:subClassOf bg:StorageElement , bg:OnePortElement ;
+  rdfs:label "capacitive storage"@en ;
+  skos:altLabel "C element"@en ;
+  bg:standardSymbol "C" ;
+  skos:definition "A one-port storage element relating effort to generalized displacement, storing energy as a function of accumulated flow."@en ;
+  bg:constitutiveEquation "q = integral of f dt ; e = Phi(q), linear case e = q/C" ;
+  bg:causalityRule "Preferred (integral) causality is effort-out: the element integrates the flow given to it and returns an effort."@en ;
+  rdfs:subClassOf
+    [ a owl:Restriction ; owl:onProperty bg:hasGeneralizedDisplacement ;
+      owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ; owl:onClass bg:GeneralizedDisplacement ] ,
+    [ a owl:Restriction ; owl:onProperty bg:hasParameter ; owl:someValuesFrom bg:Capacitance ] .
+
+bg:InertialStorage a owl:Class ;
+  rdfs:subClassOf bg:StorageElement , bg:OnePortElement ;
+  rdfs:label "inertial storage"@en ;
+  skos:altLabel "I element"@en ;
+  bg:standardSymbol "I" ;
+  skos:definition "A one-port storage element relating flow to generalized momentum, storing energy as a function of accumulated effort."@en ;
+  bg:constitutiveEquation "p = integral of e dt ; f = Psi(p), linear case f = p/I" ;
+  bg:causalityRule "Preferred (integral) causality is flow-out: the element integrates the effort given to it and returns a flow."@en ;
+  rdfs:subClassOf
+    [ a owl:Restriction ; owl:onProperty bg:hasGeneralizedMomentum ;
+      owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ; owl:onClass bg:GeneralizedMomentum ] ,
+    [ a owl:Restriction ; owl:onProperty bg:hasParameter ; owl:someValuesFrom bg:Inertance ] .
+
+bg:DissipativeElement a owl:Class ;
+  rdfs:subClassOf bg:BondGraphElement ;
+  rdfs:label "dissipative element"@en ;
+  skos:definition "An element that relates efforts to flows algebraically, with no state, and with non-negative net power into it."@en ;
+  skos:scopeNote "Not restricted to one port: a two-port dissipator covers the chemical reaction component of biochemical bond graphs."@en .
+
+bg:Resistor a owl:Class ;
+  rdfs:subClassOf bg:DissipativeElement , bg:OnePortElement ;
+  rdfs:label "resistor"@en ;
+  skos:altLabel "R element"@en ;
+  bg:standardSymbol "R" ;
+  skos:definition "A one-port dissipative element imposing a static relation between the effort and flow at its port."@en ;
+  bg:constitutiveEquation "e = Phi_R(f), linear case e = R*f" ;
+  bg:causalityRule "Indifferent: either causality is admissible unless the constitutive relation is non-invertible."@en ;
+  rdfs:subClassOf
+    [ a owl:Restriction ; owl:onProperty bg:hasParameter ; owl:someValuesFrom bg:Resistance ] .
+
+bg:SourceElement a owl:Class ;
+  rdfs:subClassOf bg:BondGraphElement , bg:OnePortElement ;
+  rdfs:label "source element"@en ;
+  skos:definition "A one-port element that imposes one of its two port variables as a prescribed function of time, independently of the rest of the graph."@en .
+
+bg:EffortSource a owl:Class ;
+  rdfs:subClassOf bg:SourceElement ;
+  rdfs:label "effort source"@en ;
+  skos:altLabel "Se element"@en ;
+  bg:standardSymbol "Se" ;
+  bg:constitutiveEquation "e = e0(t), f unconstrained" ;
+  bg:causalityRule "Fixed effort-out causality."@en ;
+  rdfs:subClassOf
+    [ a owl:Restriction ; owl:onProperty bg:hasPort ; owl:someValuesFrom bg:EffortDeterminingPort ] ,
+    [ a owl:Restriction ; owl:onProperty bg:hasPort ;
+      owl:maxQualifiedCardinality "0"^^xsd:nonNegativeInteger ; owl:onClass bg:FlowDeterminingPort ] .
+
+bg:FlowSource a owl:Class ;
+  rdfs:subClassOf bg:SourceElement ;
+  rdfs:label "flow source"@en ;
+  skos:altLabel "Sf element"@en ;
+  bg:standardSymbol "Sf" ;
+  bg:constitutiveEquation "f = f0(t), e unconstrained" ;
+  bg:causalityRule "Fixed flow-out causality."@en ;
+  rdfs:subClassOf
+    [ a owl:Restriction ; owl:onProperty bg:hasPort ; owl:someValuesFrom bg:FlowDeterminingPort ] ,
+    [ a owl:Restriction ; owl:onProperty bg:hasPort ;
+      owl:maxQualifiedCardinality "0"^^xsd:nonNegativeInteger ; owl:onClass bg:EffortDeterminingPort ] .
+
+[] a owl:AllDisjointClasses ; owl:members ( bg:EffortSource bg:FlowSource ) .
+
+bg:Transducer a owl:Class ;
+  rdfs:subClassOf bg:BondGraphElement , bg:TwoPortElement ;
+  rdfs:label "transducer"@en ;
+  skos:definition "A power-conserving two-port element that maps the variables of one port onto those of the other, possibly across energy domains."@en ;
+  bg:constitutiveEquation "e1*f1 = e2*f2" .
+
+bg:Transformer a owl:Class ;
+  rdfs:subClassOf bg:Transducer ;
+  rdfs:label "transformer"@en ;
+  skos:altLabel "TF element"@en ;
+  bg:standardSymbol "TF" ;
+  skos:definition "A transducer relating effort to effort and flow to flow by a modulus."@en ;
+  bg:constitutiveEquation "e1 = m*e2 ; f2 = m*f1" ;
+  bg:causalityRule "Through causality: exactly one port is effort-determining, so the pair of ports carries one stroke on each side in the same orientation."@en ;
+  rdfs:subClassOf
+    [ a owl:Restriction ; owl:onProperty bg:hasParameter ; owl:someValuesFrom bg:TransformerModulus ] ,
+    [ a owl:Restriction ; owl:onProperty bg:hasPort ;
+      owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ; owl:onClass bg:EffortDeterminingPort ] .
+
+bg:Gyrator a owl:Class ;
+  rdfs:subClassOf bg:Transducer ;
+  rdfs:label "gyrator"@en ;
+  skos:altLabel "GY element"@en ;
+  bg:standardSymbol "GY" ;
+  skos:definition "A transducer relating the effort at each port to the flow at the other by a modulus."@en ;
+  bg:constitutiveEquation "e1 = r*f2 ; e2 = r*f1" ;
+  bg:causalityRule "Crossed causality: either both ports are effort-determining or neither is."@en ;
+  rdfs:subClassOf
+    [ a owl:Restriction ; owl:onProperty bg:hasParameter ; owl:someValuesFrom bg:GyratorModulus ] .
+
+# Crossed causality of the gyrator, stated as the two admissible cases. A gyrator with
+# exactly one effort-determining port is unsatisfiable.
+[ a owl:Class ; owl:intersectionOf ( bg:Gyrator
+    [ a owl:Restriction ; owl:onProperty bg:hasPort ; owl:someValuesFrom bg:EffortDeterminingPort ] ) ]
+  rdfs:subClassOf [ a owl:Restriction ; owl:onProperty bg:hasPort ;
+      owl:minQualifiedCardinality "2"^^xsd:nonNegativeInteger ; owl:onClass bg:EffortDeterminingPort ] .
+
+bg:ModulatedTransformer a owl:Class ;
+  rdfs:subClassOf bg:Transformer , bg:ModulatedElement ;
+  rdfs:label "modulated transformer"@en ; bg:standardSymbol "MTF" .
+bg:ModulatedGyrator a owl:Class ;
+  rdfs:subClassOf bg:Gyrator , bg:ModulatedElement ;
+  rdfs:label "modulated gyrator"@en ; bg:standardSymbol "MGY" .
+bg:ModulatedResistor a owl:Class ;
+  rdfs:subClassOf bg:Resistor , bg:ModulatedElement ;
+  rdfs:label "modulated resistor"@en ; bg:standardSymbol "MR" .
+
+bg:Junction a owl:Class ;
+  rdfs:subClassOf bg:BondGraphElement ;
+  rdfs:label "junction"@en ;
+  skos:definition "A power-conserving element that enforces equality of one variable across its ports and a signed sum of zero on the conjugate variable."@en ;
+  rdfs:subClassOf
+    [ a owl:Restriction ; owl:onProperty bg:hasPort ;
+      owl:minQualifiedCardinality "2"^^xsd:nonNegativeInteger ; owl:onClass bg:PowerPort ] ,
+    [ a owl:Restriction ; owl:onProperty bg:hasConstitutiveRelation ;
+      owl:someValuesFrom bg:JunctionConstraint ] ;
+  skos:editorialNote "Two ports is permitted so that intermediate graphs produced during simplification remain well formed; bg:NonDegenerateJunction captures the three-or-more case."@en .
+
+bg:NonDegenerateJunction a owl:Class ;
+  rdfs:label "non-degenerate junction"@en ;
+  skos:definition "A junction with three or more ports, i.e. one that cannot be removed by merging its two bonds."@en ;
+  owl:equivalentClass [ a owl:Class ; owl:intersectionOf ( bg:Junction bg:MultiPortElement ) ] .
+
+bg:ZeroJunction a owl:Class ;
+  rdfs:subClassOf bg:Junction ;
+  rdfs:label "0-junction"@en ;
+  skos:altLabel "common effort junction"@en ;
+  bg:standardSymbol "0" ;
+  skos:definition "A junction at which all ports share a common effort and the signed flows sum to zero."@en ;
+  bg:constitutiveEquation "e_1 = ... = e_n ; sum_i s_i f_i = 0 with s_i = +1 at sink ends" ;
+  bg:causalityRule "Exactly one port is flow-determining: the effort is set by one adjacent element and relayed to the others."@en ;
+  rdfs:subClassOf
+    [ a owl:Restriction ; owl:onProperty bg:hasCommonEffort ;
+      owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ; owl:onClass bg:Effort ] ,
+    [ a owl:Restriction ; owl:onProperty bg:hasPort ;
+      owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ; owl:onClass bg:FlowDeterminingPort ] ,
+    [ a owl:Restriction ; owl:onProperty bg:hasConstitutiveRelation ;
+      owl:someValuesFrom bg:CommonEffortConstraint ] .
+
+bg:OneJunction a owl:Class ;
+  rdfs:subClassOf bg:Junction ;
+  rdfs:label "1-junction"@en ;
+  skos:altLabel "common flow junction"@en ;
+  bg:standardSymbol "1" ;
+  skos:definition "A junction at which all ports share a common flow and the signed efforts sum to zero."@en ;
+  bg:constitutiveEquation "f_1 = ... = f_n ; sum_i s_i e_i = 0 with s_i = +1 at sink ends" ;
+  bg:causalityRule "Exactly one port is effort-determining: the flow is set by one adjacent element and relayed to the others."@en ;
+  rdfs:subClassOf
+    [ a owl:Restriction ; owl:onProperty bg:hasCommonFlow ;
+      owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ; owl:onClass bg:Flow ] ,
+    [ a owl:Restriction ; owl:onProperty bg:hasPort ;
+      owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ; owl:onClass bg:EffortDeterminingPort ] ,
+    [ a owl:Restriction ; owl:onProperty bg:hasConstitutiveRelation ;
+      owl:someValuesFrom bg:CommonFlowConstraint ] .
+
+[] a owl:AllDisjointClasses ; owl:members ( bg:ZeroJunction bg:OneJunction ) .
+
+bg:CompositeElement a owl:Class ;
+  rdfs:subClassOf bg:BondGraphElement ;
+  rdfs:label "composite element"@en ;
+  skos:altLabel "subsystem"@en ;
+  skos:definition "An element standing in for a whole bond graph, exposing that graph's dangling power ports as its own. The vertex of a word bond graph."@en ;
+  rdfs:subClassOf [ a owl:Restriction ; owl:onProperty bg:encapsulates ;
+      owl:someValuesFrom bg:BondGraph ] .
+
+[] a owl:AllDisjointClasses ;
+  owl:members ( bg:StorageElement bg:DissipativeElement bg:SourceElement
+                bg:Transducer bg:Junction ) .
+
+################################################################
+# Causality: propagation rules for storage elements
+################################################################
+
+bg:effortOut a owl:NamedIndividual , bg:Causality ;
+  rdfs:label "effort-out causality"@en ;
+  skos:definition "The element at this port determines the effort and accepts the flow."@en .
+
+bg:flowOut a owl:NamedIndividual , bg:Causality ;
+  rdfs:label "flow-out causality"@en ;
+  skos:definition "The element at this port determines the flow and accepts the effort."@en .
+
+bg:integralCausality a owl:NamedIndividual , bg:CausalForm ;
+  rdfs:label "integral causality"@en ;
+  skos:definition "The storage element's constitutive relation is used in integrated form, so the element contributes a state variable to an explicit ODE system. The preferred form."@en .
+
+bg:derivativeCausality a owl:NamedIndividual , bg:CausalForm ;
+  rdfs:label "derivative causality"@en ;
+  skos:definition "The storage element's constitutive relation is used in differentiated form, so the element's state is algebraically dependent on others and the system is not in explicit ODE form."@en .
+
+[] a owl:AllDifferent ; owl:distinctMembers ( bg:effortOut bg:flowOut ) .
+[] a owl:AllDifferent ; owl:distinctMembers ( bg:integralCausality bg:derivativeCausality ) .
+
+# C in integral causality outputs effort.
+[ a owl:Class ; owl:intersectionOf ( bg:CapacitiveStorage
+    [ a owl:Restriction ; owl:onProperty bg:hasCausalForm ; owl:hasValue bg:integralCausality ] ) ]
+  rdfs:subClassOf
+    [ a owl:Restriction ; owl:onProperty bg:hasPort ; owl:someValuesFrom bg:EffortDeterminingPort ] ,
+    [ a owl:Restriction ; owl:onProperty bg:hasPort ;
+      owl:maxQualifiedCardinality "0"^^xsd:nonNegativeInteger ; owl:onClass bg:FlowDeterminingPort ] .
+
+# C in derivative causality outputs flow.
+[ a owl:Class ; owl:intersectionOf ( bg:CapacitiveStorage
+    [ a owl:Restriction ; owl:onProperty bg:hasCausalForm ; owl:hasValue bg:derivativeCausality ] ) ]
+  rdfs:subClassOf
+    [ a owl:Restriction ; owl:onProperty bg:hasPort ; owl:someValuesFrom bg:FlowDeterminingPort ] ,
+    [ a owl:Restriction ; owl:onProperty bg:hasPort ;
+      owl:maxQualifiedCardinality "0"^^xsd:nonNegativeInteger ; owl:onClass bg:EffortDeterminingPort ] .
+
+# I in integral causality outputs flow.
+[ a owl:Class ; owl:intersectionOf ( bg:InertialStorage
+    [ a owl:Restriction ; owl:onProperty bg:hasCausalForm ; owl:hasValue bg:integralCausality ] ) ]
+  rdfs:subClassOf
+    [ a owl:Restriction ; owl:onProperty bg:hasPort ; owl:someValuesFrom bg:FlowDeterminingPort ] ,
+    [ a owl:Restriction ; owl:onProperty bg:hasPort ;
+      owl:maxQualifiedCardinality "0"^^xsd:nonNegativeInteger ; owl:onClass bg:EffortDeterminingPort ] .
+
+# I in derivative causality outputs effort.
+[ a owl:Class ; owl:intersectionOf ( bg:InertialStorage
+    [ a owl:Restriction ; owl:onProperty bg:hasCausalForm ; owl:hasValue bg:derivativeCausality ] ) ]
+  rdfs:subClassOf
+    [ a owl:Restriction ; owl:onProperty bg:hasPort ; owl:someValuesFrom bg:EffortDeterminingPort ] ,
+    [ a owl:Restriction ; owl:onProperty bg:hasPort ;
+      owl:maxQualifiedCardinality "0"^^xsd:nonNegativeInteger ; owl:onClass bg:FlowDeterminingPort ] .
+
+################################################################
+# Quantities
+################################################################
+
+bg:PowerVariable a owl:Class ;
+  rdfs:subClassOf bg:Quantity ;
+  rdfs:label "power variable"@en ;
+  skos:definition "One of the two variables carried on a bond, whose product with its conjugate is the power transferred."@en .
+
+bg:Effort a owl:Class ;
+  rdfs:subClassOf bg:PowerVariable ;
+  rdfs:label "effort"@en ;
+  bg:standardSymbol "e" ;
+  skos:definition "The intensive power variable of a bond: the quantity that is equalised at a 0-junction."@en .
+
+bg:Flow a owl:Class ;
+  rdfs:subClassOf bg:PowerVariable ;
+  rdfs:label "flow"@en ;
+  bg:standardSymbol "f" ;
+  skos:definition "The extensive power variable of a bond: the quantity that is equalised at a 1-junction and conserved at a 0-junction."@en .
+
+[] a owl:AllDisjointClasses ; owl:members ( bg:Effort bg:Flow ) .
+
+bg:EnergyVariable a owl:Class ;
+  rdfs:subClassOf bg:Quantity ;
+  rdfs:label "energy variable"@en ;
+  skos:definition "A time integral of a power variable; the state of a storage element."@en .
+
+bg:GeneralizedDisplacement a owl:Class ;
+  rdfs:subClassOf bg:EnergyVariable ;
+  rdfs:label "generalized displacement"@en ;
+  bg:standardSymbol "q" ;
+  skos:definition "The time integral of a flow."@en ;
+  rdfs:subClassOf [ a owl:Restriction ; owl:onProperty bg:integralOf ;
+      owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ; owl:onClass bg:Flow ] .
+
+bg:GeneralizedMomentum a owl:Class ;
+  rdfs:subClassOf bg:EnergyVariable ;
+  rdfs:label "generalized momentum"@en ;
+  bg:standardSymbol "p" ;
+  skos:definition "The time integral of an effort."@en ;
+  rdfs:subClassOf [ a owl:Restriction ; owl:onProperty bg:integralOf ;
+      owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ; owl:onClass bg:Effort ] .
+
+[] a owl:AllDisjointClasses ; owl:members ( bg:GeneralizedDisplacement bg:GeneralizedMomentum ) .
+
+bg:Power a owl:Class ;
+  rdfs:subClassOf bg:Quantity ;
+  rdfs:label "power"@en ;
+  bg:constitutiveEquation "P = e*f" ;
+  bg:ucumUnit "W" .
+
+bg:StoredEnergy a owl:Class ;
+  rdfs:subClassOf bg:Quantity ;
+  rdfs:label "stored energy"@en ;
+  bg:constitutiveEquation "E = integral of e dq, equivalently integral of f dp" ;
+  bg:ucumUnit "J" .
+
+bg:ConstitutiveParameter a owl:Class ;
+  rdfs:subClassOf bg:Quantity ;
+  rdfs:label "constitutive parameter"@en ;
+  skos:definition "A coefficient of an element's constitutive relation."@en ;
+  skos:closeMatch sbo:0000009 .
+
+bg:Capacitance a owl:Class ; rdfs:subClassOf bg:ConstitutiveParameter ;
+  rdfs:label "generalized capacitance"@en ; bg:standardSymbol "C" ;
+  skos:definition "The coefficient relating generalized displacement to effort in a linear C element."@en .
+bg:Inertance a owl:Class ; rdfs:subClassOf bg:ConstitutiveParameter ;
+  rdfs:label "generalized inertance"@en ; bg:standardSymbol "I" ;
+  skos:definition "The coefficient relating generalized momentum to flow in a linear I element."@en .
+bg:Resistance a owl:Class ; rdfs:subClassOf bg:ConstitutiveParameter ;
+  rdfs:label "generalized resistance"@en ; bg:standardSymbol "R" ;
+  skos:definition "The coefficient relating flow to effort in a linear R element."@en .
+bg:TransformerModulus a owl:Class ; rdfs:subClassOf bg:ConstitutiveParameter ;
+  rdfs:label "transformer modulus"@en ; bg:standardSymbol "m" .
+bg:GyratorModulus a owl:Class ; rdfs:subClassOf bg:ConstitutiveParameter ;
+  rdfs:label "gyrator modulus"@en ; bg:standardSymbol "r" .
+
+[] a owl:AllDisjointClasses ;
+  owl:members ( bg:PowerVariable bg:EnergyVariable bg:ConstitutiveParameter bg:Power bg:StoredEnergy ) .
+
+################################################################
+# Constitutive relations
+################################################################
+
+bg:JunctionConstraint a owl:Class ; rdfs:subClassOf bg:ConstitutiveRelation ;
+  rdfs:label "junction constraint"@en ;
+  skos:closeMatch sbo:0000355 .
+bg:CommonEffortConstraint a owl:Class ; rdfs:subClassOf bg:JunctionConstraint ;
+  rdfs:label "common effort constraint"@en .
+bg:CommonFlowConstraint a owl:Class ; rdfs:subClassOf bg:JunctionConstraint ;
+  rdfs:label "common flow constraint"@en .
+[] a owl:AllDisjointClasses ; owl:members ( bg:CommonEffortConstraint bg:CommonFlowConstraint ) .
+
+bg:StorageRelation a owl:Class ; rdfs:subClassOf bg:ConstitutiveRelation ;
+  rdfs:label "storage relation"@en .
+bg:DissipationRelation a owl:Class ; rdfs:subClassOf bg:ConstitutiveRelation ;
+  rdfs:label "dissipation relation"@en .
+bg:TransductionRelation a owl:Class ; rdfs:subClassOf bg:ConstitutiveRelation ;
+  rdfs:label "transduction relation"@en .
+bg:SourceRelation a owl:Class ; rdfs:subClassOf bg:ConstitutiveRelation ;
+  rdfs:label "source relation"@en .
+
+bg:LinearConstitutiveRelation a owl:Class ; rdfs:subClassOf bg:ConstitutiveRelation ;
+  rdfs:label "linear constitutive relation"@en .
+bg:NonlinearConstitutiveRelation a owl:Class ; rdfs:subClassOf bg:ConstitutiveRelation ;
+  rdfs:label "nonlinear constitutive relation"@en .
+[] a owl:AllDisjointClasses ;
+  owl:members ( bg:LinearConstitutiveRelation bg:NonlinearConstitutiveRelation ) .
+
+################################################################
+# Energy domains and their conjugate variable pairs
+################################################################
+
+bg:electricalDomain a owl:NamedIndividual , bg:EnergyDomain ;
+  rdfs:label "electrical domain"@en ;
+  skos:example "effort: voltage (V); flow: current (A)"@en .
+bg:hydraulicDomain a owl:NamedIndividual , bg:EnergyDomain ;
+  rdfs:label "hydraulic domain"@en ; skos:altLabel "fluid domain"@en ;
+  skos:example "effort: pressure (Pa); flow: volumetric flow rate (m3/s)"@en .
+bg:mechanicalTranslationDomain a owl:NamedIndividual , bg:EnergyDomain ;
+  rdfs:label "mechanical translation domain"@en ;
+  skos:example "effort: force (N); flow: velocity (m/s)"@en .
+bg:mechanicalRotationDomain a owl:NamedIndividual , bg:EnergyDomain ;
+  rdfs:label "mechanical rotation domain"@en ;
+  skos:example "effort: torque (N.m); flow: angular velocity (rad/s)"@en .
+bg:chemicalDomain a owl:NamedIndividual , bg:EnergyDomain ;
+  rdfs:label "chemical domain"@en ;
+  skos:example "effort: chemical potential (J/mol); flow: molar flow rate (mol/s)"@en .
+bg:thermalDomain a owl:NamedIndividual , bg:EnergyDomain ;
+  rdfs:label "thermal domain"@en ;
+  skos:example "effort: absolute temperature (K); flow: entropy flow rate (W/K)"@en ;
+  skos:editorialNote "The temperature/entropy-flow pair is the true power-conjugate choice. The temperature/heat-flow pair used in pseudo bond graphs is not power-conjugate and should be represented by a separate, explicitly pseudo domain if required."@en .
+bg:magneticDomain a owl:NamedIndividual , bg:EnergyDomain ;
+  rdfs:label "magnetic domain"@en ;
+  skos:example "effort: magnetomotive force (A); flow: rate of change of magnetic flux (V)"@en .
+
+[] a owl:AllDifferent ; owl:distinctMembers
+  ( bg:electricalDomain bg:hydraulicDomain bg:mechanicalTranslationDomain
+    bg:mechanicalRotationDomain bg:chemicalDomain bg:thermalDomain bg:magneticDomain ) .
+
+# --- domain-specific efforts
+
+bg:Voltage a owl:Class ; rdfs:subClassOf bg:Effort ;
+  rdfs:label "voltage"@en ; bg:ucumUnit "V" ; skos:closeMatch sbo:0000259 ;
+  rdfs:subClassOf [ a owl:Restriction ; owl:onProperty bg:inEnergyDomain ; owl:hasValue bg:electricalDomain ] .
+bg:Pressure a owl:Class ; rdfs:subClassOf bg:Effort ;
+  rdfs:label "pressure"@en ; bg:ucumUnit "Pa" ;
+  rdfs:subClassOf [ a owl:Restriction ; owl:onProperty bg:inEnergyDomain ; owl:hasValue bg:hydraulicDomain ] .
+bg:Force a owl:Class ; rdfs:subClassOf bg:Effort ;
+  rdfs:label "force"@en ; bg:ucumUnit "N" ;
+  rdfs:subClassOf [ a owl:Restriction ; owl:onProperty bg:inEnergyDomain ; owl:hasValue bg:mechanicalTranslationDomain ] .
+bg:Torque a owl:Class ; rdfs:subClassOf bg:Effort ;
+  rdfs:label "torque"@en ; bg:ucumUnit "N.m" ;
+  rdfs:subClassOf [ a owl:Restriction ; owl:onProperty bg:inEnergyDomain ; owl:hasValue bg:mechanicalRotationDomain ] .
+bg:ChemicalPotential a owl:Class ; rdfs:subClassOf bg:Effort ;
+  rdfs:label "chemical potential"@en ; bg:ucumUnit "J/mol" ; skos:closeMatch sbo:0000303 ;
+  rdfs:subClassOf [ a owl:Restriction ; owl:onProperty bg:inEnergyDomain ; owl:hasValue bg:chemicalDomain ] .
+bg:AbsoluteTemperature a owl:Class ; rdfs:subClassOf bg:Effort ;
+  rdfs:label "absolute temperature"@en ; bg:ucumUnit "K" ; skos:closeMatch sbo:0000147 ;
+  rdfs:subClassOf [ a owl:Restriction ; owl:onProperty bg:inEnergyDomain ; owl:hasValue bg:thermalDomain ] .
+bg:MagnetomotiveForce a owl:Class ; rdfs:subClassOf bg:Effort ;
+  rdfs:label "magnetomotive force"@en ; bg:ucumUnit "A" ;
+  rdfs:subClassOf [ a owl:Restriction ; owl:onProperty bg:inEnergyDomain ; owl:hasValue bg:magneticDomain ] .
+
+[] a owl:AllDisjointClasses ;
+  owl:members ( bg:Voltage bg:Pressure bg:Force bg:Torque bg:ChemicalPotential
+                bg:AbsoluteTemperature bg:MagnetomotiveForce ) .
+
+# --- domain-specific flows
+
+bg:ElectricCurrent a owl:Class ; rdfs:subClassOf bg:Flow ;
+  rdfs:label "electric current"@en ; bg:ucumUnit "A" ;
+  rdfs:subClassOf [ a owl:Restriction ; owl:onProperty bg:inEnergyDomain ; owl:hasValue bg:electricalDomain ] .
+bg:VolumetricFlowRate a owl:Class ; rdfs:subClassOf bg:Flow ;
+  rdfs:label "volumetric flow rate"@en ; bg:ucumUnit "m3/s" ;
+  rdfs:subClassOf [ a owl:Restriction ; owl:onProperty bg:inEnergyDomain ; owl:hasValue bg:hydraulicDomain ] .
+bg:LinearVelocity a owl:Class ; rdfs:subClassOf bg:Flow ;
+  rdfs:label "linear velocity"@en ; bg:ucumUnit "m/s" ;
+  rdfs:subClassOf [ a owl:Restriction ; owl:onProperty bg:inEnergyDomain ; owl:hasValue bg:mechanicalTranslationDomain ] .
+bg:AngularVelocity a owl:Class ; rdfs:subClassOf bg:Flow ;
+  rdfs:label "angular velocity"@en ; bg:ucumUnit "rad/s" ;
+  rdfs:subClassOf [ a owl:Restriction ; owl:onProperty bg:inEnergyDomain ; owl:hasValue bg:mechanicalRotationDomain ] .
+bg:MolarFlowRate a owl:Class ; rdfs:subClassOf bg:Flow ;
+  rdfs:label "molar flow rate"@en ; bg:ucumUnit "mol/s" ; skos:closeMatch sbo:0000612 ;
+  rdfs:subClassOf [ a owl:Restriction ; owl:onProperty bg:inEnergyDomain ; owl:hasValue bg:chemicalDomain ] .
+bg:EntropyFlowRate a owl:Class ; rdfs:subClassOf bg:Flow ;
+  rdfs:label "entropy flow rate"@en ; bg:ucumUnit "W/K" ;
+  rdfs:subClassOf [ a owl:Restriction ; owl:onProperty bg:inEnergyDomain ; owl:hasValue bg:thermalDomain ] .
+bg:MagneticFluxRate a owl:Class ; rdfs:subClassOf bg:Flow ;
+  rdfs:label "rate of change of magnetic flux"@en ; bg:ucumUnit "V" ;
+  rdfs:subClassOf [ a owl:Restriction ; owl:onProperty bg:inEnergyDomain ; owl:hasValue bg:magneticDomain ] .
+
+[] a owl:AllDisjointClasses ;
+  owl:members ( bg:ElectricCurrent bg:VolumetricFlowRate bg:LinearVelocity
+                bg:AngularVelocity bg:MolarFlowRate bg:EntropyFlowRate bg:MagneticFluxRate ) .
+
+# --- domain-specific generalized displacements
+
+bg:ElectricCharge a owl:Class ; rdfs:subClassOf bg:GeneralizedDisplacement ;
+  rdfs:label "electric charge"@en ; bg:ucumUnit "C" ;
+  rdfs:subClassOf [ a owl:Restriction ; owl:onProperty bg:integralOf ; owl:allValuesFrom bg:ElectricCurrent ] .
+bg:Volume a owl:Class ; rdfs:subClassOf bg:GeneralizedDisplacement ;
+  rdfs:label "volume"@en ; bg:ucumUnit "m3" ;
+  rdfs:subClassOf [ a owl:Restriction ; owl:onProperty bg:integralOf ; owl:allValuesFrom bg:VolumetricFlowRate ] .
+bg:Displacement a owl:Class ; rdfs:subClassOf bg:GeneralizedDisplacement ;
+  rdfs:label "displacement"@en ; bg:ucumUnit "m" ;
+  rdfs:subClassOf [ a owl:Restriction ; owl:onProperty bg:integralOf ; owl:allValuesFrom bg:LinearVelocity ] .
+bg:Angle a owl:Class ; rdfs:subClassOf bg:GeneralizedDisplacement ;
+  rdfs:label "angle"@en ; bg:ucumUnit "rad" ;
+  rdfs:subClassOf [ a owl:Restriction ; owl:onProperty bg:integralOf ; owl:allValuesFrom bg:AngularVelocity ] .
+bg:MolarAmount a owl:Class ; rdfs:subClassOf bg:GeneralizedDisplacement ;
+  rdfs:label "molar amount"@en ; bg:ucumUnit "mol" ; skos:closeMatch sbo:0000361 ;
+  skos:relatedMatch sbo:0000196 ;
+  rdfs:subClassOf [ a owl:Restriction ; owl:onProperty bg:integralOf ; owl:allValuesFrom bg:MolarFlowRate ] .
+bg:Entropy a owl:Class ; rdfs:subClassOf bg:GeneralizedDisplacement ;
+  rdfs:label "entropy"@en ; bg:ucumUnit "J/K" ;
+  rdfs:subClassOf [ a owl:Restriction ; owl:onProperty bg:integralOf ; owl:allValuesFrom bg:EntropyFlowRate ] .
+
+# --- domain-specific generalized momenta
+# Only the domains in which an inertial effect is defined; there is no chemical or
+# thermal inertance in the standard formalism.
+
+bg:FluxLinkage a owl:Class ; rdfs:subClassOf bg:GeneralizedMomentum ;
+  rdfs:label "flux linkage"@en ; bg:ucumUnit "Wb" ;
+  rdfs:subClassOf [ a owl:Restriction ; owl:onProperty bg:integralOf ; owl:allValuesFrom bg:Voltage ] .
+bg:PressureMomentum a owl:Class ; rdfs:subClassOf bg:GeneralizedMomentum ;
+  rdfs:label "pressure momentum"@en ; bg:ucumUnit "Pa.s" ;
+  rdfs:subClassOf [ a owl:Restriction ; owl:onProperty bg:integralOf ; owl:allValuesFrom bg:Pressure ] .
+bg:LinearMomentum a owl:Class ; rdfs:subClassOf bg:GeneralizedMomentum ;
+  rdfs:label "linear momentum"@en ; bg:ucumUnit "N.s" ;
+  rdfs:subClassOf [ a owl:Restriction ; owl:onProperty bg:integralOf ; owl:allValuesFrom bg:Force ] .
+bg:AngularMomentum a owl:Class ; rdfs:subClassOf bg:GeneralizedMomentum ;
+  rdfs:label "angular momentum"@en ; bg:ucumUnit "N.m.s" ;
+  rdfs:subClassOf [ a owl:Restriction ; owl:onProperty bg:integralOf ; owl:allValuesFrom bg:Torque ] .

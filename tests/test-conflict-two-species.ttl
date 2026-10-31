@@ -1,0 +1,133 @@
+@prefix bg: <https://w3id.org/bondgraph/core#> .
+@prefix bgb: <https://w3id.org/bondgraph/biochem#> .
+@prefix ex: <https://w3id.org/bondgraph/tests/conflict-two-species#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<https://w3id.org/bondgraph/tests/conflict-two-species> a owl:Ontology ;
+    rdfs:label "Causality conflict: two Ce components in integral causality on one common-potential node"@en ;
+    owl:imports <https://w3id.org/bondgraph/biochem>,
+        <https://w3id.org/bondgraph/core> .
+
+ex:b1 a owl:NamedIndividual,
+        bg:PowerBond ;
+    bg:hasEnd ex:p_X,
+        ex:p_j1 ;
+    bg:hasPowerSink ex:p_j1 ;
+    bg:hasPowerSource ex:p_X ;
+    bg:inEnergyDomain bg:chemicalDomain .
+
+ex:b2 a owl:NamedIndividual,
+        bg:PowerBond ;
+    bg:hasEnd ex:p_Y,
+        ex:p_j2 ;
+    bg:hasPowerSink ex:p_j2 ;
+    bg:hasPowerSource ex:p_Y ;
+    bg:inEnergyDomain bg:chemicalDomain .
+
+ex:Ce_X a owl:NamedIndividual,
+        bgb:SpeciesComponent ;
+    bg:hasCausalForm bg:integralCausality ;
+    bg:hasGeneralizedDisplacement ex:q_X ;
+    bg:hasParameter ex:K_X .
+
+ex:Ce_Y a owl:NamedIndividual,
+        bgb:SpeciesComponent ;
+    bg:hasCausalForm bg:integralCausality ;
+    bg:hasGeneralizedDisplacement ex:q_Y ;
+    bg:hasParameter ex:K_Y .
+
+ex:K_X a owl:NamedIndividual,
+        bgb:SpeciesThermodynamicConstant .
+
+ex:K_Y a owl:NamedIndividual,
+        bgb:SpeciesThermodynamicConstant .
+
+ex:c_J a owl:NamedIndividual,
+        bg:CommonEffortConstraint .
+
+ex:e_p_X a owl:NamedIndividual,
+        bg:ChemicalPotential ;
+    bg:conjugateTo ex:f_p_X ;
+    bg:symbol "e_X"^^xsd:string .
+
+ex:e_p_Y a owl:NamedIndividual,
+        bg:ChemicalPotential ;
+    bg:conjugateTo ex:f_p_Y ;
+    bg:symbol "e_Y"^^xsd:string .
+
+ex:e_p_j1 a owl:NamedIndividual,
+        bg:ChemicalPotential ;
+    bg:conjugateTo ex:f_p_j1 ;
+    bg:symbol "e_j1"^^xsd:string .
+
+ex:e_p_j2 a owl:NamedIndividual,
+        bg:ChemicalPotential ;
+    bg:conjugateTo ex:f_p_j2 ;
+    bg:symbol "e_j2"^^xsd:string .
+
+ex:q_X a owl:NamedIndividual,
+        bg:MolarAmount ;
+    bg:integralOf ex:f_p_X .
+
+ex:q_Y a owl:NamedIndividual,
+        bg:MolarAmount ;
+    bg:integralOf ex:f_p_Y .
+
+ex:J a owl:NamedIndividual,
+        bg:ZeroJunction ;
+    bg:hasConstitutiveRelation ex:c_J .
+
+ex:f_p_j1 a owl:NamedIndividual,
+        bg:MolarFlowRate ;
+    bg:symbol "f_j1"^^xsd:string .
+
+ex:f_p_j2 a owl:NamedIndividual,
+        bg:MolarFlowRate ;
+    bg:symbol "f_j2"^^xsd:string .
+
+ex:p_X a owl:NamedIndividual,
+        bg:PowerPort ;
+    bg:hasEffort ex:e_p_X ;
+    bg:hasFlow ex:f_p_X ;
+    bg:inEnergyDomain bg:chemicalDomain ;
+    bg:portIndex "0"^^xsd:nonNegativeInteger ;
+    bg:portOf ex:Ce_X .
+
+ex:p_Y a owl:NamedIndividual,
+        bg:PowerPort ;
+    bg:hasEffort ex:e_p_Y ;
+    bg:hasFlow ex:f_p_Y ;
+    bg:inEnergyDomain bg:chemicalDomain ;
+    bg:portIndex "0"^^xsd:nonNegativeInteger ;
+    bg:portOf ex:Ce_Y .
+
+ex:p_j1 a owl:NamedIndividual,
+        bg:PowerPort ;
+    bg:hasEffort ex:e_p_j1 ;
+    bg:hasFlow ex:f_p_j1 ;
+    bg:inEnergyDomain bg:chemicalDomain ;
+    bg:portIndex "0"^^xsd:nonNegativeInteger ;
+    bg:portOf ex:J .
+
+ex:p_j2 a owl:NamedIndividual,
+        bg:PowerPort ;
+    bg:hasEffort ex:e_p_j2 ;
+    bg:hasFlow ex:f_p_j2 ;
+    bg:inEnergyDomain bg:chemicalDomain ;
+    bg:portIndex "1"^^xsd:nonNegativeInteger ;
+    bg:portOf ex:J .
+
+ex:f_p_X a owl:NamedIndividual,
+        bg:MolarFlowRate ;
+    bg:symbol "f_X"^^xsd:string .
+
+ex:f_p_Y a owl:NamedIndividual,
+        bg:MolarFlowRate ;
+    bg:symbol "f_Y"^^xsd:string .
+
+[] a owl:AllDifferent ;
+    owl:distinctMembers ( ex:J ex:c_J ex:Ce_X ex:q_X ex:K_X ex:p_X ex:e_p_X ex:f_p_X ex:p_j1 ex:e_p_j1 ex:f_p_j1 ex:b1 ex:Ce_Y ex:q_Y ex:K_Y ex:p_Y ex:e_p_Y ex:f_p_Y ex:p_j2 ex:e_p_j2 ex:f_p_j2 ex:b2 ) .
+

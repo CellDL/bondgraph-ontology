@@ -1,0 +1,57 @@
+@prefix bg: <https://w3id.org/bondgraph/core#> .
+@prefix ex: <https://w3id.org/bondgraph/tests/conflict-gyrator-causality#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<https://w3id.org/bondgraph/tests/conflict-gyrator-causality> a owl:Ontology ;
+    rdfs:label "Causality conflict: gyrator with exactly one effort-determining port"@en ;
+    owl:imports <https://w3id.org/bondgraph/core> .
+
+ex:p_1 a owl:NamedIndividual,
+        bg:PowerPort ;
+    bg:hasCausality bg:effortOut ;
+    bg:hasEffort ex:e_p_1 ;
+    bg:hasFlow ex:f_p_1 ;
+    bg:inEnergyDomain bg:mechanicalRotationDomain ;
+    bg:portIndex "0"^^xsd:nonNegativeInteger ;
+    bg:portOf ex:GY .
+
+ex:p_2 a owl:NamedIndividual,
+        bg:PowerPort ;
+    bg:hasCausality bg:flowOut ;
+    bg:hasEffort ex:e_p_2 ;
+    bg:hasFlow ex:f_p_2 ;
+    bg:inEnergyDomain bg:electricalDomain ;
+    bg:portIndex "1"^^xsd:nonNegativeInteger ;
+    bg:portOf ex:GY .
+
+ex:e_p_1 a owl:NamedIndividual,
+        bg:Torque ;
+    bg:conjugateTo ex:f_p_1 ;
+    bg:symbol "e_1"^^xsd:string .
+
+ex:e_p_2 a owl:NamedIndividual,
+        bg:Voltage ;
+    bg:conjugateTo ex:f_p_2 ;
+    bg:symbol "e_2"^^xsd:string .
+
+ex:r_param a owl:NamedIndividual,
+        bg:GyratorModulus .
+
+ex:GY a owl:NamedIndividual,
+        bg:Gyrator ;
+    bg:hasParameter ex:r_param .
+
+ex:f_p_1 a owl:NamedIndividual,
+        bg:AngularVelocity ;
+    bg:symbol "f_1"^^xsd:string .
+
+ex:f_p_2 a owl:NamedIndividual,
+        bg:ElectricCurrent ;
+    bg:symbol "f_2"^^xsd:string .
+
+[] a owl:AllDifferent ;
+    owl:distinctMembers ( ex:GY ex:r_param ex:p_1 ex:e_p_1 ex:f_p_1 ex:p_2 ex:e_p_2 ex:f_p_2 ) .
+

@@ -1,0 +1,72 @@
+@prefix bg: <https://w3id.org/bondgraph/core#> .
+@prefix ex: <https://w3id.org/bondgraph/tests/conflict-sf-into-i#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<https://w3id.org/bondgraph/tests/conflict-sf-into-i> a owl:Ontology ;
+    rdfs:label "Causality conflict: flow source bonded to an inertia in integral causality"@en ;
+    owl:imports <https://w3id.org/bondgraph/core> .
+
+ex:b1 a owl:NamedIndividual,
+        bg:PowerBond ;
+    bg:hasEnd ex:p_i,
+        ex:p_sf ;
+    bg:hasPowerSink ex:p_i ;
+    bg:hasPowerSource ex:p_sf ;
+    bg:inEnergyDomain bg:mechanicalTranslationDomain .
+
+ex:I_mass a owl:NamedIndividual,
+        bg:InertialStorage ;
+    bg:hasCausalForm bg:integralCausality ;
+    bg:hasGeneralizedMomentum ex:p_mom ;
+    bg:hasParameter ex:I_param .
+
+ex:I_param a owl:NamedIndividual,
+        bg:Inertance .
+
+ex:Sf_v a owl:NamedIndividual,
+        bg:FlowSource .
+
+ex:e_p_sf a owl:NamedIndividual,
+        bg:Force ;
+    bg:conjugateTo ex:f_p_sf ;
+    bg:symbol "e_sf"^^xsd:string .
+
+ex:p_mom a owl:NamedIndividual,
+        bg:LinearMomentum ;
+    bg:integralOf ex:e_p_i .
+
+ex:e_p_i a owl:NamedIndividual,
+        bg:Force ;
+    bg:conjugateTo ex:f_p_i ;
+    bg:symbol "e_i"^^xsd:string .
+
+ex:f_p_i a owl:NamedIndividual,
+        bg:LinearVelocity ;
+    bg:symbol "f_i"^^xsd:string .
+
+ex:f_p_sf a owl:NamedIndividual,
+        bg:LinearVelocity ;
+    bg:symbol "f_sf"^^xsd:string .
+
+ex:p_i a owl:NamedIndividual,
+        bg:PowerPort ;
+    bg:hasEffort ex:e_p_i ;
+    bg:hasFlow ex:f_p_i ;
+    bg:inEnergyDomain bg:mechanicalTranslationDomain ;
+    bg:portIndex "0"^^xsd:nonNegativeInteger ;
+    bg:portOf ex:I_mass .
+
+ex:p_sf a owl:NamedIndividual,
+        bg:PowerPort ;
+    bg:hasEffort ex:e_p_sf ;
+    bg:hasFlow ex:f_p_sf ;
+    bg:inEnergyDomain bg:mechanicalTranslationDomain ;
+    bg:portIndex "0"^^xsd:nonNegativeInteger ;
+    bg:portOf ex:Sf_v .
+
+[] a owl:AllDifferent ;
+    owl:distinctMembers ( ex:Sf_v ex:I_mass ex:I_param ex:p_mom ex:p_sf ex:e_p_sf ex:f_p_sf ex:p_i ex:e_p_i ex:f_p_i ex:b1 ) .
+

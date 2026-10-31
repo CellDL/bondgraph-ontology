@@ -1,0 +1,188 @@
+@prefix bgb:  <https://w3id.org/bondgraph/biochem#> .
+@prefix bg:   <https://w3id.org/bondgraph/core#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix dct:  <http://purl.org/dc/terms/> .
+@prefix sbo:  <http://biomodels.net/SBO/SBO_> .
+
+<https://w3id.org/bondgraph/biochem> a owl:Ontology ;
+  owl:versionIRI <https://w3id.org/bondgraph/biochem/0.1.0> ;
+  owl:imports <https://w3id.org/bondgraph/core> ;
+  dct:title "Bond Graph Ontology -- Biochemical and Physiological Extension"@en ;
+  dct:description """The chemical-domain specialisation of the bond graph core: the
+species component Ce, the reaction component Re, boundary conditions (chemostat,
+flowstat), stoichiometric and electrogenic transducers, and compartments.
+
+Included as a separate module to demonstrate the intended extension pattern: a domain
+module adds subclasses and fixes their energy domain and causality, and adds nothing
+to the core's own axioms."""@en ;
+  rdfs:seeAlso "Gawthrop & Crampin (2014) Energy-based analysis of biochemical cycles using bond graphs, Proc. R. Soc. A"@en ,
+               "Oster, Perelson & Katchalsky (1971) Network thermodynamics"@en .
+
+dct:title a owl:AnnotationProperty .
+dct:description a owl:AnnotationProperty .
+
+################################################################
+# Parameters
+################################################################
+
+bgb:SpeciesThermodynamicConstant a owl:Class ;
+  rdfs:subClassOf bg:ConstitutiveParameter ;
+  rdfs:label "species thermodynamic constant"@en ;
+  bg:standardSymbol "K" ;
+  bg:ucumUnit "/mol" ;
+  skos:definition "The species constant of a Ce component, combining the standard chemical potential and the reference amount, such that mu = R T ln(K q)."@en ;
+  skos:relatedMatch sbo:0000463 .
+
+bgb:ReactionRateConstant a owl:Class ;
+  rdfs:subClassOf bg:ConstitutiveParameter ;
+  rdfs:label "reaction rate constant"@en ;
+  bg:standardSymbol "kappa" ;
+  bg:ucumUnit "mol/s" ;
+  skos:definition "The rate constant of an Re component in the Marcelin-de Donder form, equal to the exchange rate at equilibrium."@en ;
+  skos:closeMatch sbo:0000009 .
+
+bgb:StoichiometricCoefficient a owl:Class ;
+  rdfs:subClassOf bg:TransformerModulus ;
+  rdfs:label "stoichiometric coefficient"@en ;
+  bg:standardSymbol "n" ;
+  bg:ucumUnit "1" ;
+  skos:definition "The modulus of a transformer standing for a stoichiometric coefficient other than one."@en .
+
+bgb:ChargeTransferModulus a owl:Class ;
+  rdfs:subClassOf bg:TransformerModulus ;
+  rdfs:label "charge transfer modulus"@en ;
+  bg:standardSymbol "zF" ;
+  bg:ucumUnit "C/mol" ;
+  skos:definition "The modulus of an electrogenic transducer: the charge translocated per mole, i.e. the valence times the Faraday constant."@en .
+
+################################################################
+# Species component (Ce)
+################################################################
+
+bgb:SpeciesComponent a owl:Class ;
+  rdfs:subClassOf bg:CapacitiveStorage ;
+  rdfs:label "species component"@en ;
+  skos:altLabel "Ce element"@en ;
+  bg:standardSymbol "Ce" ;
+  skos:definition "A chemical-domain capacitive storage element representing a pool of one chemical species in one compartment, whose state is the molar amount and whose effort is the chemical potential."@en ;
+  bg:constitutiveEquation "q = integral of v dt ; mu = R*T*ln(K*q)" ;
+  bg:causalityRule "Integral causality is effort-out: the component integrates the net molar flow and returns a chemical potential. Derivative causality arises only where a species pool is algebraically constrained, e.g. by a conservation moiety."@en ;
+  skos:relatedMatch sbo:0000247 , sbo:0000361 ;
+  rdfs:subClassOf
+    [ a owl:Restriction ; owl:onProperty bg:inEnergyDomain ; owl:hasValue bg:chemicalDomain ] ,
+    [ a owl:Restriction ; owl:onProperty bg:hasGeneralizedDisplacement ;
+      owl:allValuesFrom bg:MolarAmount ] ,
+    [ a owl:Restriction ; owl:onProperty bg:hasPort ;
+      owl:allValuesFrom [ a owl:Class ; owl:unionOf ( bg:SignalPort
+        [ a owl:Restriction ; owl:onProperty bg:inEnergyDomain ; owl:hasValue bg:chemicalDomain ] ) ] ] ,
+    [ a owl:Restriction ; owl:onProperty bg:hasParameter ;
+      owl:someValuesFrom bgb:SpeciesThermodynamicConstant ] .
+
+################################################################
+# Reaction component (Re)
+################################################################
+
+bgb:ReactionComponent a owl:Class ;
+  rdfs:subClassOf bg:DissipativeElement , bg:TwoPortElement ;
+  rdfs:label "reaction component"@en ;
+  skos:altLabel "Re element"@en ;
+  bg:standardSymbol "Re" ;
+  skos:definition "A two-port chemical-domain dissipative element representing one reversible elementary reaction. It receives the forward and reverse chemical potentials and returns the reaction flow, dissipating the product of flow and affinity."@en ;
+  bg:constitutiveEquation "v = kappa*(exp(A_f/(R*T)) - exp(A_r/(R*T))) ; A_f = mu_1, A_r = mu_2 ; dissipated power = v*(A_f - A_r) >= 0" ;
+  bg:causalityRule "Fixed: both ports are flow-determining. The exponential constitutive relation is not invertible port-wise, so a reaction component can never accept a flow as input. This is what forces integral causality on the species components around it."@en ;
+  skos:closeMatch sbo:0000176 ;
+  skos:relatedMatch sbo:0000167 ;
+  rdfs:subClassOf
+    [ a owl:Restriction ; owl:onProperty bg:inEnergyDomain ; owl:hasValue bg:chemicalDomain ] ,
+    [ a owl:Restriction ; owl:onProperty bg:hasParameter ;
+      owl:someValuesFrom bgb:ReactionRateConstant ] ,
+    [ a owl:Restriction ; owl:onProperty bg:hasConstitutiveRelation ;
+      owl:someValuesFrom bg:NonlinearConstitutiveRelation ] ,
+    [ a owl:Restriction ; owl:onProperty bg:hasPort ;
+      owl:qualifiedCardinality "2"^^xsd:nonNegativeInteger ; owl:onClass bg:FlowDeterminingPort ] .
+
+bgb:MembraneTransportComponent a owl:Class ;
+  rdfs:subClassOf bgb:ReactionComponent ;
+  rdfs:label "membrane transport component"@en ;
+  skos:definition "A reaction component whose two ports lie in different compartments, representing translocation of a species across a membrane rather than a change of chemical identity."@en ;
+  skos:closeMatch sbo:0000655 .
+
+################################################################
+# Boundary conditions
+################################################################
+
+bgb:Chemostat a owl:Class ;
+  rdfs:subClassOf bg:EffortSource ;
+  rdfs:label "chemostat"@en ;
+  bg:standardSymbol "Se:mu" ;
+  skos:definition "A species pool held at a prescribed chemical potential, representing an external reservoir. The open-system boundary condition that makes a non-equilibrium steady state possible."@en ;
+  bg:constitutiveEquation "mu = mu_0(t), v unconstrained" ;
+  rdfs:subClassOf
+    [ a owl:Restriction ; owl:onProperty bg:inEnergyDomain ; owl:hasValue bg:chemicalDomain ] .
+
+bgb:Flowstat a owl:Class ;
+  rdfs:subClassOf bg:FlowSource ;
+  rdfs:label "flowstat"@en ;
+  bg:standardSymbol "Sf:v" ;
+  skos:definition "A prescribed molar flow into or out of the system, representing an imposed influx or efflux."@en ;
+  bg:constitutiveEquation "v = v_0(t), mu unconstrained" ;
+  rdfs:subClassOf
+    [ a owl:Restriction ; owl:onProperty bg:inEnergyDomain ; owl:hasValue bg:chemicalDomain ] .
+
+[] a owl:AllDisjointClasses ; owl:members ( bgb:Chemostat bgb:Flowstat ) .
+
+################################################################
+# Transducers
+################################################################
+
+bgb:StoichiometricTransformer a owl:Class ;
+  rdfs:subClassOf bg:Transformer ;
+  rdfs:label "stoichiometric transformer"@en ;
+  bg:standardSymbol "TF:n" ;
+  skos:definition "A transformer whose modulus is a stoichiometric coefficient, used where a species enters a reaction with a coefficient other than one."@en ;
+  bg:constitutiveEquation "mu_reaction_side = n*mu_species_side ; v_species_side = n*v_reaction_side" ;
+  rdfs:subClassOf
+    [ a owl:Restriction ; owl:onProperty bg:hasParameter ;
+      owl:someValuesFrom bgb:StoichiometricCoefficient ] .
+
+bgb:ElectrogenicTransducer a owl:Class ;
+  rdfs:subClassOf bg:Transformer ;
+  rdfs:label "electrogenic transducer"@en ;
+  bg:standardSymbol "TF:zF" ;
+  skos:definition "A transformer coupling the chemical and electrical domains, converting molar flow into current and membrane potential into a contribution to chemical potential. The element through which an electrogenic transporter or an ion channel enters a physiological bond graph."@en ;
+  bg:constitutiveEquation "mu = z*F*V ; i = z*F*v" ;
+  rdfs:subClassOf
+    [ a owl:Restriction ; owl:onProperty bg:hasParameter ;
+      owl:someValuesFrom bgb:ChargeTransferModulus ] ,
+    [ a owl:Restriction ; owl:onProperty bg:hasPort ;
+      owl:someValuesFrom [ a owl:Restriction ; owl:onProperty bg:inEnergyDomain ;
+        owl:hasValue bg:chemicalDomain ] ] ,
+    [ a owl:Restriction ; owl:onProperty bg:hasPort ;
+      owl:someValuesFrom [ a owl:Restriction ; owl:onProperty bg:inEnergyDomain ;
+        owl:hasValue bg:electricalDomain ] ] .
+
+################################################################
+# Compartments
+################################################################
+
+bgb:CompartmentSubsystem a owl:Class ;
+  rdfs:subClassOf bg:CompositeElement ;
+  rdfs:label "compartment subsystem"@en ;
+  skos:definition "A composite element whose encapsulated bond graph is the set of species and reactions of one physical compartment, exposing as ports the species that cross its boundary."@en ;
+  skos:closeMatch sbo:0000290 .
+
+bgb:ReactionNetwork a owl:Class ;
+  rdfs:subClassOf bg:BondGraph ;
+  rdfs:label "reaction network"@en ;
+  skos:definition "A bond graph whose elements are species components, reaction components and the junctions and transducers that connect them."@en .
+
+bgb:OpenReactionNetwork a owl:Class ;
+  rdfs:label "open reaction network"@en ;
+  skos:definition "A reaction network with at least one chemostat or flowstat, and therefore capable of a non-equilibrium steady state."@en ;
+  owl:equivalentClass [ a owl:Class ; owl:intersectionOf ( bgb:ReactionNetwork
+      [ a owl:Restriction ; owl:onProperty bg:hasElement ;
+        owl:someValuesFrom [ a owl:Class ; owl:unionOf ( bgb:Chemostat bgb:Flowstat ) ] ] ) ] .

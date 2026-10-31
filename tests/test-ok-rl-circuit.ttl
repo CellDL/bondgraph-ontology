@@ -1,0 +1,171 @@
+@prefix bg: <https://w3id.org/bondgraph/core#> .
+@prefix ex: <https://w3id.org/bondgraph/tests/ok-rl-circuit#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<https://w3id.org/bondgraph/tests/ok-rl-circuit> a owl:Ontology ;
+    rdfs:label "Consistent: Se -- 1-junction -- {R, I}"@en ;
+    owl:imports <https://w3id.org/bondgraph/core> .
+
+ex:b1 a owl:NamedIndividual,
+        bg:PowerBond ;
+    bg:hasEnd ex:p_j1,
+        ex:p_se ;
+    bg:hasPowerSink ex:p_j1 ;
+    bg:hasPowerSource ex:p_se ;
+    bg:inEnergyDomain bg:electricalDomain .
+
+ex:b2 a owl:NamedIndividual,
+        bg:PowerBond ;
+    bg:hasEnd ex:p_j2,
+        ex:p_r ;
+    bg:hasPowerSink ex:p_r ;
+    bg:hasPowerSource ex:p_j2 ;
+    bg:inEnergyDomain bg:electricalDomain .
+
+ex:b3 a owl:NamedIndividual,
+        bg:PowerBond ;
+    bg:hasEnd ex:p_i,
+        ex:p_j3 ;
+    bg:hasPowerSink ex:p_i ;
+    bg:hasPowerSource ex:p_j3 ;
+    bg:inEnergyDomain bg:electricalDomain .
+
+ex:I_coil a owl:NamedIndividual,
+        bg:InertialStorage ;
+    bg:hasCausalForm bg:integralCausality ;
+    bg:hasGeneralizedMomentum ex:lambda_coil ;
+    bg:hasParameter ex:I_param .
+
+ex:I_param a owl:NamedIndividual,
+        bg:Inertance .
+
+ex:R_coil a owl:NamedIndividual,
+        bg:Resistor ;
+    bg:hasParameter ex:R_param .
+
+ex:R_param a owl:NamedIndividual,
+        bg:Resistance .
+
+ex:Se_v a owl:NamedIndividual,
+        bg:EffortSource .
+
+ex:c_J1 a owl:NamedIndividual,
+        bg:CommonFlowConstraint .
+
+ex:e_p_j1 a owl:NamedIndividual,
+        bg:Voltage ;
+    bg:conjugateTo ex:f_p_j1 ;
+    bg:symbol "e_j1"^^xsd:string .
+
+ex:e_p_j2 a owl:NamedIndividual,
+        bg:Voltage ;
+    bg:conjugateTo ex:f_p_j2 ;
+    bg:symbol "e_j2"^^xsd:string .
+
+ex:e_p_j3 a owl:NamedIndividual,
+        bg:Voltage ;
+    bg:conjugateTo ex:f_p_j3 ;
+    bg:symbol "e_j3"^^xsd:string .
+
+ex:e_p_r a owl:NamedIndividual,
+        bg:Voltage ;
+    bg:conjugateTo ex:f_p_r ;
+    bg:symbol "e_r"^^xsd:string .
+
+ex:e_p_se a owl:NamedIndividual,
+        bg:Voltage ;
+    bg:conjugateTo ex:f_p_se ;
+    bg:symbol "e_se"^^xsd:string .
+
+ex:lambda_coil a owl:NamedIndividual,
+        bg:FluxLinkage ;
+    bg:integralOf ex:e_p_i .
+
+ex:e_p_i a owl:NamedIndividual,
+        bg:Voltage ;
+    bg:conjugateTo ex:f_p_i ;
+    bg:symbol "e_i"^^xsd:string .
+
+ex:f_p_i a owl:NamedIndividual,
+        bg:ElectricCurrent ;
+    bg:symbol "f_i"^^xsd:string .
+
+ex:f_p_j1 a owl:NamedIndividual,
+        bg:ElectricCurrent ;
+    bg:symbol "f_j1"^^xsd:string .
+
+ex:f_p_j2 a owl:NamedIndividual,
+        bg:ElectricCurrent ;
+    bg:symbol "f_j2"^^xsd:string .
+
+ex:f_p_j3 a owl:NamedIndividual,
+        bg:ElectricCurrent ;
+    bg:symbol "f_j3"^^xsd:string .
+
+ex:f_p_r a owl:NamedIndividual,
+        bg:ElectricCurrent ;
+    bg:symbol "f_r"^^xsd:string .
+
+ex:p_i a owl:NamedIndividual,
+        bg:PowerPort ;
+    bg:hasEffort ex:e_p_i ;
+    bg:hasFlow ex:f_p_i ;
+    bg:inEnergyDomain bg:electricalDomain ;
+    bg:portIndex "0"^^xsd:nonNegativeInteger ;
+    bg:portOf ex:I_coil .
+
+ex:p_j1 a owl:NamedIndividual,
+        bg:PowerPort ;
+    bg:hasEffort ex:e_p_j1 ;
+    bg:hasFlow ex:f_p_j1 ;
+    bg:inEnergyDomain bg:electricalDomain ;
+    bg:portIndex "0"^^xsd:nonNegativeInteger ;
+    bg:portOf ex:J1 .
+
+ex:p_j2 a owl:NamedIndividual,
+        bg:PowerPort ;
+    bg:hasEffort ex:e_p_j2 ;
+    bg:hasFlow ex:f_p_j2 ;
+    bg:inEnergyDomain bg:electricalDomain ;
+    bg:portIndex "1"^^xsd:nonNegativeInteger ;
+    bg:portOf ex:J1 .
+
+ex:p_j3 a owl:NamedIndividual,
+        bg:PowerPort ;
+    bg:hasEffort ex:e_p_j3 ;
+    bg:hasFlow ex:f_p_j3 ;
+    bg:inEnergyDomain bg:electricalDomain ;
+    bg:portIndex "2"^^xsd:nonNegativeInteger ;
+    bg:portOf ex:J1 .
+
+ex:p_r a owl:NamedIndividual,
+        bg:PowerPort ;
+    bg:hasEffort ex:e_p_r ;
+    bg:hasFlow ex:f_p_r ;
+    bg:inEnergyDomain bg:electricalDomain ;
+    bg:portIndex "0"^^xsd:nonNegativeInteger ;
+    bg:portOf ex:R_coil .
+
+ex:p_se a owl:NamedIndividual,
+        bg:PowerPort ;
+    bg:hasEffort ex:e_p_se ;
+    bg:hasFlow ex:f_p_se ;
+    bg:inEnergyDomain bg:electricalDomain ;
+    bg:portIndex "0"^^xsd:nonNegativeInteger ;
+    bg:portOf ex:Se_v .
+
+ex:J1 a owl:NamedIndividual,
+        bg:OneJunction ;
+    bg:hasCommonFlow ex:f_p_se ;
+    bg:hasConstitutiveRelation ex:c_J1 .
+
+ex:f_p_se a owl:NamedIndividual,
+        bg:ElectricCurrent ;
+    bg:symbol "f_se"^^xsd:string .
+
+[] a owl:AllDifferent ;
+    owl:distinctMembers ( ex:Se_v ex:R_coil ex:I_coil ex:J1 ex:R_param ex:I_param ex:lambda_coil ex:c_J1 ex:p_se ex:e_p_se ex:f_p_se ex:p_r ex:e_p_r ex:f_p_r ex:p_i ex:e_p_i ex:f_p_i ex:p_j1 ex:e_p_j1 ex:f_p_j1 ex:p_j2 ex:e_p_j2 ex:f_p_j2 ex:p_j3 ex:e_p_j3 ex:f_p_j3 ex:b1 ex:b2 ex:b3 ) .
+
