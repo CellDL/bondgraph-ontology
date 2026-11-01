@@ -7,9 +7,9 @@ with a separate chemical-domain extension for physiological modelling.
 
 | File | Contents |
 |---|---|
-| [bondgraph-core.ttl](bondgraph-core.ttl) | The core ontology. 93 classes, 27 object properties, 5 data properties, 16 annotation properties, 11 named individuals, 1348 triples. |
-| [bondgraph-biochem.ttl](bondgraph-biochem.ttl) | Chemical/physiological extension: Ce, Re, chemostat, flowstat, stoichiometric and electrogenic transducers, compartments. 14 classes, 191 triples. |
-| [example-reaction-chain.ttl](example-reaction-chain.ttl) | Exemplar model: the reversible chain A ⇌ B ⇌ C, with species B on a shared common-potential node. |
+| [bondgraph-core.ttl](src/bondgraph-core.ttl) | The core ontology. 93 classes, 27 object properties, 5 data properties, 16 annotation properties, 11 named individuals, 1348 triples. |
+| [bondgraph-biochem.ttl](src/domains/bondgraph-biochem.ttl) | Chemical/physiological extension: Ce, Re, chemostat, flowstat, stoichiometric and electrogenic transducers, compartments. 14 classes, 191 triples. |
+| [reaction-chain.ttl](examples/reaction-chain.ttl) | Exemplar model: the reversible chain A ⇌ B ⇌ C, with species B on a shared common-potential node. |
 | [tests/](tests/) | Nine regression models: two well-formed (`test-ok-rl-circuit`, `test-ok-derivative-causality`) and seven deliberately malformed (`test-conflict-*`). The other three consistent models in the validation table are the two ontology modules and the exemplar, which live outside this directory. |
 | [reasoner-report.md](reasoner-report.md) | HermiT output for every model and entailment test. |
 | [build_models.py](scripts/build_models.py) | Generates the exemplar and the test models. |

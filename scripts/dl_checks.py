@@ -144,8 +144,8 @@ def section(paths, label):
 
 
 def report():
-    core = [ROOT / "bondgraph-core.ttl"]
-    both = core + [ROOT / "bondgraph-biochem.ttl"]
+    core = [ROOT / "src/bondgraph-core.ttl"]
+    both = core + [ROOT / "src/domains/bondgraph-biochem.ttl"]
     s1, ok1 = section(core, "`bondgraph-core.ttl`")
     s2, ok2 = section(both, "`bondgraph-core.ttl` + `bondgraph-biochem.ttl`")
     return "\n\n".join([s1, s2]), (ok1 and ok2)

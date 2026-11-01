@@ -32,8 +32,8 @@ BG = Namespace("https://w3id.org/bondgraph/core#")
 BGB = Namespace("https://w3id.org/bondgraph/biochem#")
 
 IRI_TO_FILE = {
-    "https://w3id.org/bondgraph/core": ROOT / "bondgraph-core.ttl",
-    "https://w3id.org/bondgraph/biochem": ROOT / "bondgraph-biochem.ttl",
+    "https://w3id.org/bondgraph/core": ROOT / "src/bondgraph-core.ttl",
+    "https://w3id.org/bondgraph/biochem": ROOT / "src/domains/bondgraph-biochem.ttl",
 }
 
 NOISE = "Picked up JAVA_TOOL_OPTIONS"
@@ -105,9 +105,9 @@ DC = Namespace("https://w3id.org/bondgraph/tests/ok-derivative-causality#")
 
 # (model file, tag, expected consistency)
 MODELS = [
-    (ROOT / "bondgraph-core.ttl", "core", True),
-    (ROOT / "bondgraph-biochem.ttl", "biochem", True),
-    (ROOT / "example-reaction-chain.ttl", "example-reaction-chain", True),
+    (ROOT / "src/bondgraph-core.ttl", "core", True),
+    (ROOT / "src/domains/bondgraph-biochem.ttl", "biochem", True),
+    (ROOT / "examples/reaction-chain.ttl", "example-reaction-chain", True),
     (ROOT / "tests/test-ok-rl-circuit.ttl", "ok-rl-circuit", True),
     (ROOT / "tests/test-ok-derivative-causality.ttl", "ok-derivative-causality", True),
     (ROOT / "tests/test-conflict-two-effort-sources.ttl", "conflict-two-effort-sources", False),

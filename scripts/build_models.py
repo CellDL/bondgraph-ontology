@@ -154,7 +154,7 @@ def build_reaction_chain():
     inds += bonds
 
     all_different(g, inds)
-    return "example-reaction-chain.ttl", g
+    return "reaction-chain.ttl", g
 
 
 # ------------------------------------------------------------------ test cases
