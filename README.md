@@ -18,11 +18,13 @@ with a separate chemical-domain extension for physiological modelling.
 | [build_models.py](scripts/build_models.py) | Generates the exemplar and the test models. |
 | [validate.py](scripts/validate.py) | Resolves imports, runs HermiT, writes the report. |
 | [dl_checks.py](scripts/dl_checks.py) | Structural OWL 2 DL checks (punning, non-simple properties). |
+| [build_serialisations.py](scripts/build_serialisations.py) | Emits RDF/XML, JSON-LD and N-Triples into `dist/`, checking each round-trips. |
+| [build_site.py](scripts/build_site.py) | Assembles the GitHub Pages site from the sources and `dist/`. |
 
-Namespaces: `https://w3id.org/bondgraph/core#` (`bg:`),
-`https://w3id.org/bondgraph/biochem#` (`bgb:`) and `https://w3id.org/bondgraph/bfo#`
-(`bgf:`). **All three are placeholders** — no w3id redirect has been registered, and
-`dct:license` asserts CC BY 4.0 in all three ontology headers (see Licence below).
+Namespaces, all under `https://w3id.org/bondgraph/`: `core#` (`bg:`), `biochem#`
+(`bgb:`), `bfo#` (`bgf:`), `hydraulic#` (`bgh:`) and `thermal#` (`bgt:`). **These
+resolve** — see [Resolution](#resolution). `dct:license` asserts CC BY 4.0 in every
+ontology header (see [Licence](#licence)).
 
 ## Design decisions
 
@@ -107,9 +109,9 @@ process would be wrong.
 `owl:versionIRI`, and move together, even when a module's own content has not
 changed. That is deliberate: the w3id rule maps `/bondgraph/<module>/<version>` onto
 the git tag `v<version>`, so a module whose version drifted from the repository's
-would resolve to a tag that does not contain it. Version 0.2.0 adds the hydraulic and
-thermal modules and the RS element; 0.1.0 remains resolvable and still holds the
-three modules it shipped with.
+would resolve to a tag that does not contain it. Version 0.2.0 added the hydraulic and
+thermal modules and the RS element; 0.3.0 adds the generated serialisations in
+`dist/`. Earlier tags remain resolvable and still hold what they shipped with.
 
 **Version pinning.** `bfo.owl` resolves to the 2019-08-26 release, which declares
 classes only and no object properties, so every relation comes from IAO
@@ -289,6 +291,47 @@ since it rejects non-simple properties in number restrictions outright.
 
 To reproduce: `uv run scripts/build_models.py && uv run scripts/validate.py`
 (needs `rdflib`, `owlready2` for its bundled HermiT, and a JVM).
+
+## Resolution
+
+Every module IRI resolves through w3id.org, which answers with a 303 to a
+serialisation chosen from the `Accept` header:
+
+| `Accept` | `https://w3id.org/bondgraph/core` resolves to |
+| --- | --- |
+| `text/turtle`, `application/x-turtle`, `text/n3` | `bondgraph-core.ttl` |
+| `application/rdf+xml` | `bondgraph-core.rdf` |
+| `application/ld+json` | `bondgraph-core.jsonld` |
+| `application/n-triples`, `application/n-quads` | `bondgraph-core.nt` |
+| anything else, browsers included | the site index |
+
+served from <https://celldl.github.io/bondgraph-ontology/>. The same applies to
+`biochem`, `bfo`, `hydraulic` and `thermal`.
+
+**State of play.** Turtle resolution is live. The other three syntaxes need the
+Pages deploy (see below) and a follow-up change to the w3id rules; until both land,
+a request for RDF/XML gets the human-readable page rather than RDF/XML. What it must
+never do is return Turtle labelled as RDF/XML, which is what the first version of
+these rules did and what the w3id reviewer correctly objected to.
+
+**Turtle is the source, not a generated artefact.** The published `.ttl` is a
+verbatim copy of the hand-authored file under `src/`, because that is where the
+comments explaining the axioms live; reserialising it would discard them. The other
+three syntaxes are produced by `scripts/build_serialisations.py`, which parses each
+generated file back and asserts it is isomorphic to its source, so a serialiser that
+drops structure fails the build.
+
+**Nothing generated is committed.** `dist/` and `site/` are built by CI on every push
+and published to Pages, so they cannot drift from the Turtle. The generated *models*
+under `examples/` and `tests/` are committed, because they are fixtures the reasoner
+report refers to, and CI fails if they differ from what the generator produces.
+
+**Version IRIs negotiate Turtle only.** `https://w3id.org/bondgraph/core/0.1.0`
+resolves to the Turtle at tag `v0.1.0` on raw.githubusercontent.com; a request for
+RDF/XML at a version IRI gets the site index instead. That is deliberate — Pages
+serves only the latest deploy, and a version IRI has to stay immutable.
+
+Examples and regression models are published in Turtle only.
 
 ## Licence
 

@@ -12,7 +12,7 @@
 ################################################################
 
 <https://w3id.org/bondgraph/core> a owl:Ontology ;
-  owl:versionIRI <https://w3id.org/bondgraph/core/0.2.0> ;
+  owl:versionIRI <https://w3id.org/bondgraph/core/0.3.0> ;
   dct:title "Bond Graph Ontology Core"@en ;
   dct:description """A domain-neutral OWL 2 DL core for the bond graph formalism: bond
 graphs, power bonds, ports, the standard element set (R, C, I, Se, Sf, TF, GY, 0, 1),
@@ -30,10 +30,10 @@ propagation rules of causality, which are purely combinatorial and therefore
 decidable. A causality conflict in a modelled graph surfaces as an OWL
 inconsistency. Numeric semantics is attached by reference, as bg:constitutiveEquation
 annotations on bg:ConstitutiveRelation individuals and classes."""@en ;
-  skos:editorialNote """Version 0.2.0. The namespace
-https://w3id.org/bondgraph/core# is a placeholder and should be rebased onto a
-registered, dereferenceable IRI before publication; no w3id redirect has been
-registered for it."""@en ;
+  skos:editorialNote """Version 0.3.0. The namespace
+https://w3id.org/bondgraph/core# resolves: w3id.org redirects it by content
+negotiation to this module, in Turtle, RDF/XML, JSON-LD or N-Triples. The
+resolution table is in the repository README."""@en ;
   dct:license <https://creativecommons.org/licenses/by/4.0/> ;
   rdfs:seeAlso "Paynter, H.M. (1961) Analysis and Design of Engineering Systems"@en ,
                "Karnopp, Margolis & Rosenberg, System Dynamics: Modeling, Simulation, and Control of Mechatronic Systems"@en ,

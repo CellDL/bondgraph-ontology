@@ -9,7 +9,7 @@
 @prefix sbo:  <http://biomodels.net/SBO/SBO_> .
 
 <https://w3id.org/bondgraph/biochem> a owl:Ontology ;
-  owl:versionIRI <https://w3id.org/bondgraph/biochem/0.2.0> ;
+  owl:versionIRI <https://w3id.org/bondgraph/biochem/0.3.0> ;
   owl:imports <https://w3id.org/bondgraph/core> ;
   dct:license <https://creativecommons.org/licenses/by/4.0/> ;
   dct:title "Bond Graph Ontology -- Biochemical and Physiological Extension"@en ;
