@@ -33,7 +33,8 @@ annotations on bg:ConstitutiveRelation individuals and classes."""@en ;
   skos:editorialNote """Version 0.1.0, a first draft of the core. The namespace
 https://w3id.org/bondgraph/core# is a placeholder and should be rebased onto a
 registered, dereferenceable IRI before publication; no w3id redirect has been
-registered for it. No licence has been asserted -- set dct:license before release."""@en ;
+registered for it."""@en ;
+  dct:license <https://creativecommons.org/licenses/by/4.0/> ;
   rdfs:seeAlso "Paynter, H.M. (1961) Analysis and Design of Engineering Systems"@en ,
                "Karnopp, Margolis & Rosenberg, System Dynamics: Modeling, Simulation, and Control of Mechatronic Systems"@en ,
                "Gawthrop & Crampin (2014) Energy-based analysis of biochemical cycles using bond graphs"@en ,

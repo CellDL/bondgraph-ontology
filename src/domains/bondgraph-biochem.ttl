@@ -11,6 +11,7 @@
 <https://w3id.org/bondgraph/biochem> a owl:Ontology ;
   owl:versionIRI <https://w3id.org/bondgraph/biochem/0.1.0> ;
   owl:imports <https://w3id.org/bondgraph/core> ;
+  dct:license <https://creativecommons.org/licenses/by/4.0/> ;
   dct:title "Bond Graph Ontology -- Biochemical and Physiological Extension"@en ;
   dct:description """The chemical-domain specialisation of the bond graph core: the
 species component Ce, the reaction component Re, boundary conditions (chemostat,
@@ -24,6 +25,7 @@ to the core's own axioms."""@en ;
 
 dct:title a owl:AnnotationProperty .
 dct:description a owl:AnnotationProperty .
+dct:license a owl:AnnotationProperty .
 
 ################################################################
 # Parameters

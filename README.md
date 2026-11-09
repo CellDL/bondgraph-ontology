@@ -7,9 +7,9 @@ with a separate chemical-domain extension for physiological modelling.
 
 | File | Contents |
 |---|---|
-| [bondgraph-core.ttl](src/bondgraph-core.ttl) | The core ontology. 93 classes, 27 object properties, 5 data properties, 16 annotation properties, 11 named individuals, 1348 triples. |
-| [bondgraph-biochem.ttl](src/domains/bondgraph-biochem.ttl) | Chemical/physiological extension: Ce, Re, chemostat, flowstat, stoichiometric and electrogenic transducers, compartments. 14 classes, 191 triples. |
-| [bondgraph-bfo.ttl](src/bondgraph-bfo.ttl) | Bridge pinning the ontology to BFO, via IAO and RO. 49 new classes, 1 new object property, 601 triples. |
+| [bondgraph-core.ttl](src/bondgraph-core.ttl) | The core ontology. 93 classes, 27 object properties, 5 data properties, 16 annotation properties, 11 named individuals, 1349 triples. |
+| [bondgraph-biochem.ttl](src/domains/bondgraph-biochem.ttl) | Chemical/physiological extension: Ce, Re, chemostat, flowstat, stoichiometric and electrogenic transducers, compartments. 14 classes, 193 triples. |
+| [bondgraph-bfo.ttl](src/bondgraph-bfo.ttl) | Bridge pinning the ontology to BFO, via IAO and RO. 49 new classes, 1 new object property, 603 triples. |
 | [reaction-chain.ttl](examples/reaction-chain.ttl) | Exemplar model: the reversible chain A ⇌ B ⇌ C, with species B on a shared common-potential node. |
 | [tests/](tests/) | Nine regression models: two well-formed (`test-ok-rl-circuit`, `test-ok-derivative-causality`) and seven deliberately malformed (`test-conflict-*`). The other three consistent models in the validation table are the two ontology modules and the exemplar, which live outside this directory. |
 | [reasoner-report.md](reasoner-report.md) | HermiT output for every model and entailment test. |
@@ -20,7 +20,7 @@ with a separate chemical-domain extension for physiological modelling.
 Namespaces: `https://w3id.org/bondgraph/core#` (`bg:`),
 `https://w3id.org/bondgraph/biochem#` (`bgb:`) and `https://w3id.org/bondgraph/bfo#`
 (`bgf:`). **All three are placeholders** — no w3id redirect has been registered, and
-`dct:license` is deliberately unset.
+`dct:license` asserts CC BY 4.0 in all three ontology headers (see Licence below).
 
 ## Design decisions
 
@@ -233,6 +233,19 @@ since it rejects non-simple properties in number restrictions outright.
 
 To reproduce: `uv run scripts/build_models.py && uv run scripts/validate.py`
 (needs `rdflib`, `owlready2` for its bundled HermiT, and a JVM).
+
+## Licence
+
+The ontology — `src/bondgraph-core.ttl`, `src/domains/bondgraph-biochem.ttl`,
+`src/bondgraph-bfo.ttl`, the exemplar and the test models — is under
+[Creative Commons Attribution 4.0 International](https://creativecommons.org/licenses/by/4.0/)
+(SPDX `CC-BY-4.0`); see [LICENSE](LICENSE). Each ontology header asserts this as
+`dct:license`.
+
+The tooling in [scripts/](scripts/) is under the
+[Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0) (SPDX `Apache-2.0`);
+see [scripts/LICENSE](scripts/LICENSE). GitHub's sidebar reports only the top-level
+licence, so the split is recorded here.
 
 ## Known gaps
 

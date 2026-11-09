@@ -20,6 +20,7 @@
               <https://w3id.org/bondgraph/biochem> ,
               <http://purl.obolibrary.org/obo/iao.owl> ,
               <http://purl.obolibrary.org/obo/ro.owl> ;
+  dct:license <https://creativecommons.org/licenses/by/4.0/> ;
   dct:title "Bond Graph Ontology -- Basic Formal Ontology bridge"@en ;
   dct:description """Pins the bond graph ontology to BFO in two layers.
 
@@ -63,6 +64,7 @@ declared locally and should be replaced by the BFO relation once it is reachable
 
 dct:title       a owl:AnnotationProperty .
 dct:description a owl:AnnotationProperty .
+dct:license     a owl:AnnotationProperty .
 skos:prefLabel     a owl:AnnotationProperty .
 skos:altLabel      a owl:AnnotationProperty .
 skos:definition    a owl:AnnotationProperty .

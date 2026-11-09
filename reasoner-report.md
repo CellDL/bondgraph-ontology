@@ -69,7 +69,7 @@ Targeted checks on punning and on non-simple properties in simple-only axioms; s
 
 ### `bondgraph-core.ttl`
 
-- triples: 1348
+- triples: 1349
 - non-simple object properties (chain or transitive): bondedTo, connectsElement
 - illegal punning: none
 - non-simple property in a simple-only axiom: none
@@ -78,7 +78,7 @@ Targeted checks on punning and on non-simple properties in simple-only axioms; s
 
 ### `bondgraph-core.ttl` + `bondgraph-biochem.ttl`
 
-- triples: 1537
+- triples: 1539
 - non-simple object properties (chain or transitive): bondedTo, connectsElement
 - illegal punning: none
 - non-simple property in a simple-only axiom: none
@@ -87,7 +87,7 @@ Targeted checks on punning and on non-simple properties in simple-only axioms; s
 
 ### the two modules + `bondgraph-bfo.ttl`
 
-- triples: 2128
+- triples: 2131
 - non-simple object properties (chain or transitive): bondedTo, connectsElement
 - illegal punning: none
 - non-simple property in a simple-only axiom: none
