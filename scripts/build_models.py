@@ -338,11 +338,69 @@ def t_conflict_bond_three_ends():
     return "test-conflict-bond-three-ends.ttl", g
 
 
+BFO = URIRef("https://w3id.org/bondgraph/bfo")
+EXAMPLE = URIRef("https://w3id.org/bondgraph/examples/reaction-chain")
+OBO = Namespace("http://purl.obolibrary.org/obo/")
+
+
+def t_ok_bfo_example():
+    """The exemplar reaction chain read through the BFO bridge."""
+    g, _ = new_graph("https://w3id.org/bondgraph/tests/ok-bfo-example", [BFO, EXAMPLE],
+                     "Consistent: the exemplar reaction chain under the BFO bridge")
+    return "test-ok-bfo-example.ttl", g
+
+
+def t_conflict_variable_as_quality():
+    """A model variable is an information entity, never the quality it denotes."""
+    g, _ = new_graph("https://w3id.org/bondgraph/tests/conflict-variable-as-quality",
+                     [BFO, EXAMPLE],
+                     "Category error: asserting that a model variable IS a BFO quality")
+    g.bind("obo", OBO)
+    chain = Namespace("https://w3id.org/bondgraph/examples/reaction-chain#")
+    g.add((chain["e_p_A"], RDF.type, OBO["BFO_0000019"]))
+    return "test-conflict-variable-as-quality.ttl", g
+
+
+BGF = Namespace("https://w3id.org/bondgraph/bfo#")
+
+
+def t_ok_multidomain_bearer():
+    """One material entity bearing qualities in two domains at once.
+
+    This is what a transformer or gyrator represents, so it must be consistent: the
+    domain bearers are deliberately not disjoint.
+    """
+    g, ex = new_graph("https://w3id.org/bondgraph/tests/ok-multidomain-bearer", [BFO],
+                      "Consistent: one body is both a conducting body and a thermal body")
+    g.bind("obo", OBO)
+    body = declare(g, ex["coil"], BGF.ConductingBody)
+    g.add((body, RDF.type, BGF.ThermalBody))
+    v = declare(g, ex["v_coil"], BGF.ElectricPotentialProperty)
+    t = declare(g, ex["T_coil"], BGF.ThermodynamicTemperatureProperty)
+    for q in (v, t):
+        g.add((q, OBO["RO_0000052"], body))
+    all_different(g, [body, v, t])
+    return "test-ok-multidomain-bearer.ttl", g
+
+
+def t_conflict_effort_kind_clash():
+    """One quality cannot be both a force and an electric potential."""
+    g, ex = new_graph("https://w3id.org/bondgraph/tests/conflict-effort-kind-clash", [BFO],
+                      "Category error: one quality asserted to be both a force "
+                      "and an electric potential")
+    q = declare(g, ex["q"], BGF.ForceProperty)
+    g.add((q, RDF.type, BGF.ElectricPotentialProperty))
+    all_different(g, [q])
+    return "test-conflict-effort-kind-clash.ttl", g
+
+
 BUILDERS = [build_reaction_chain, t_ok_rl_circuit, t_ok_derivative_causality,
             t_conflict_two_effort_sources, t_conflict_sf_into_inertia,
             t_conflict_two_species_on_node, t_conflict_gyrator_causality,
             t_conflict_double_causality, t_conflict_signal_causality,
-            t_conflict_bond_three_ends]
+            t_conflict_bond_three_ends,
+            t_ok_bfo_example, t_conflict_variable_as_quality,
+            t_ok_multidomain_bearer, t_conflict_effort_kind_clash]
 
 if __name__ == "__main__":
     (OUT / "tests").mkdir(exist_ok=True)

@@ -34,7 +34,26 @@ BGB = Namespace("https://w3id.org/bondgraph/biochem#")
 IRI_TO_FILE = {
     "https://w3id.org/bondgraph/core": ROOT / "bondgraph-core.ttl",
     "https://w3id.org/bondgraph/biochem": ROOT / "bondgraph-biochem.ttl",
+    "https://w3id.org/bondgraph/bfo": ROOT / "bondgraph-bfo.ttl",
+    "https://w3id.org/bondgraph/examples/reaction-chain": ROOT / "example-reaction-chain.ttl",
+    "http://purl.obolibrary.org/obo/iao.owl": ROOT / "imports/iao.owl",
+    "http://purl.obolibrary.org/obo/ro.owl": ROOT / "imports/ro.owl",
 }
+
+# OBO releases are fetched on demand rather than vendored into the repository.
+OBO_DOWNLOADS = {
+    ROOT / "imports/iao.owl": "https://purl.obolibrary.org/obo/iao.owl",
+    ROOT / "imports/ro.owl": "https://purl.obolibrary.org/obo/ro.owl",
+}
+
+
+def ensure_imports():
+    import urllib.request
+    for path, url in OBO_DOWNLOADS.items():
+        if not path.exists():
+            path.parent.mkdir(exist_ok=True)
+            print(f"fetching {url}")
+            urllib.request.urlretrieve(url, path)
 
 NOISE = "Picked up JAVA_TOOL_OPTIONS"
 
@@ -53,7 +72,7 @@ def merge(path, seen=None, graph=None):
     graph = Graph() if graph is None else graph
     seen = set() if seen is None else seen
     g = Graph()
-    g.parse(str(path), format="turtle")
+    g.parse(str(path), format="xml" if path.suffix == ".owl" else "turtle")
     for ont in set(g.subjects(RDF.type, OWL.Ontology)):
         for imp in g.objects(ont, OWL.imports):
             key = str(imp)
@@ -102,6 +121,8 @@ def conclusion(tag, triples, prefixes=(("bg", BG), ("bgb", BGB))):
 EX = Namespace("https://w3id.org/bondgraph/examples/reaction-chain#")
 RL = Namespace("https://w3id.org/bondgraph/tests/ok-rl-circuit#")
 DC = Namespace("https://w3id.org/bondgraph/tests/ok-derivative-causality#")
+OBO = Namespace("http://purl.obolibrary.org/obo/")
+BGF = Namespace("https://w3id.org/bondgraph/bfo#")
 
 # (model file, tag, expected consistency)
 MODELS = [
@@ -117,6 +138,11 @@ MODELS = [
     (ROOT / "tests/test-conflict-double-causality.ttl", "conflict-double-causality", False),
     (ROOT / "tests/test-conflict-signal-causality.ttl", "conflict-signal-causality", False),
     (ROOT / "tests/test-conflict-bond-three-ends.ttl", "conflict-bond-three-ends", False),
+    (ROOT / "bondgraph-bfo.ttl", "bfo-bridge", True),
+    (ROOT / "tests/test-ok-bfo-example.ttl", "ok-bfo-example", True),
+    (ROOT / "tests/test-conflict-variable-as-quality.ttl", "conflict-variable-as-quality", False),
+    (ROOT / "tests/test-ok-multidomain-bearer.ttl", "ok-multidomain-bearer", True),
+    (ROOT / "tests/test-conflict-effort-kind-clash.ttl", "conflict-effort-kind-clash", False),
 ]
 
 # (premise tag, label, conclusion triples, expected entailment)
@@ -151,10 +177,35 @@ ENTAILMENTS = [
      [(RL["R_coil"], RDF.type, BG.OnePortElement)], True),
     ("ok-derivative-causality", "the model is classified as having derivative causality",
      [(DC["m"], RDF.type, BG.ModelWithDerivativeCausality)], True),
+    ("ok-bfo-example", "species component Ce:A is an IAO information content entity",
+     [(EX["Ce_A"], RDF.type, OBO["IAO_0000030"])], True),
+    ("ok-bfo-example", "Ce:A is a BFO generically dependent continuant",
+     [(EX["Ce_A"], RDF.type, OBO["BFO_0000031"])], True),
+    ("ok-bfo-example", "the model has port p_A as a BFO part (transitive, via the element)",
+     [(EX["abcChain"], OBO["BFO_0000051"], EX["p_A"])], True),
+    ("ok-bfo-example", "the chemical-potential VARIABLE is NOT a BFO quality",
+     [(EX["e_p_A"], RDF.type, OBO["BFO_0000019"])], False),
+    ("bfo-bridge", "molar flow rate profile is a BFO occurrent",
+     [(BGF.MolarFlowRateProfile, RDFS.subClassOf, OBO["BFO_0000003"])], True),
+    ("bfo-bridge", "chemical potential property is a BFO specifically dependent continuant",
+     [(BGF.ChemicalPotentialProperty, RDFS.subClassOf, OBO["BFO_0000020"])], True),
+    ("bfo-bridge", "a rate process profile is NOT a BFO continuant",
+     [(BGF.RateProcessProfile, RDFS.subClassOf, OBO["BFO_0000002"])], False),
+    ("bfo-bridge", "linear velocity is a BFO occurrent, not a quality",
+     [(BGF.LinearVelocityProfile, RDFS.subClassOf, OBO["BFO_0000003"])], True),
+    ("bfo-bridge", "force is a BFO specifically dependent continuant",
+     [(BGF.ForceProperty, RDFS.subClassOf, OBO["BFO_0000020"])], True),
+    ("bfo-bridge", "entropy flow rate is a profile of a heat transfer process",
+     [(BGF.EntropyFlowRateProfile, RDFS.subClassOf, OBO["BFO_0000144"])], True),
+    ("bfo-bridge", "an electric current is NOT a BFO continuant",
+     [(BGF.ElectricCurrentProfile, RDFS.subClassOf, OBO["BFO_0000002"])], False),
+    ("bfo-bridge", "a conducting body is NOT necessarily a thermal body",
+     [(BGF.ConductingBody, RDFS.subClassOf, BGF.ThermalBody)], False),
 ]
 
 
 def main():
+    ensure_imports()
     lines, failures = [], 0
     lines.append("# HermiT reasoning report\n")
     lines.append(f"Reasoner: HermiT (bundled with Owlready2 {owlready2.VERSION}); "
@@ -176,7 +227,7 @@ def main():
                      f"| {verdict} {'(ok)' if ok else '(MISMATCH)'} |")
 
     lines.append("\n### Unsatisfiable classes\n")
-    for tag in ("core", "biochem"):
+    for tag in ("core", "biochem", "bfo-bridge"):
         rc, out = hermit("-U", str(prepared[tag]))
         body = [l.strip() for l in out.splitlines() if l.strip().startswith(("owl:", "bg", "http"))]
         extra = [b for b in body if b != "owl:Nothing"]

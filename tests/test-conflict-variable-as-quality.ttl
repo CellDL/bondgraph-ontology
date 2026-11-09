@@ -1,0 +1,11 @@
+@prefix obo: <http://purl.obolibrary.org/obo/> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+
+<https://w3id.org/bondgraph/examples/reaction-chain#e_p_A> a obo:BFO_0000019 .
+
+<https://w3id.org/bondgraph/tests/conflict-variable-as-quality> a owl:Ontology ;
+    rdfs:label "Category error: asserting that a model variable IS a BFO quality"@en ;
+    owl:imports <https://w3id.org/bondgraph/bfo>,
+        <https://w3id.org/bondgraph/examples/reaction-chain> .
+

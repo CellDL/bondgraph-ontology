@@ -1,0 +1,25 @@
+@prefix ex: <https://w3id.org/bondgraph/tests/ok-multidomain-bearer#> .
+@prefix obo: <http://purl.obolibrary.org/obo/> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+
+<https://w3id.org/bondgraph/tests/ok-multidomain-bearer> a owl:Ontology ;
+    rdfs:label "Consistent: one body is both a conducting body and a thermal body"@en ;
+    owl:imports <https://w3id.org/bondgraph/bfo> .
+
+ex:T_coil a owl:NamedIndividual,
+        <https://w3id.org/bondgraph/bfo#ThermodynamicTemperatureProperty> ;
+    obo:RO_0000052 ex:coil .
+
+ex:v_coil a owl:NamedIndividual,
+        <https://w3id.org/bondgraph/bfo#ElectricPotentialProperty> ;
+    obo:RO_0000052 ex:coil .
+
+ex:coil a owl:NamedIndividual,
+        <https://w3id.org/bondgraph/bfo#ConductingBody>,
+        <https://w3id.org/bondgraph/bfo#ThermalBody> .
+
+[] a owl:AllDifferent ;
+    owl:distinctMembers ( ex:coil ex:v_coil ex:T_coil ) .
+

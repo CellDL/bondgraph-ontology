@@ -1,0 +1,565 @@
+@prefix bgf:  <https://w3id.org/bondgraph/bfo#> .
+@prefix bg:   <https://w3id.org/bondgraph/core#> .
+@prefix bgb:  <https://w3id.org/bondgraph/biochem#> .
+@prefix obo:  <http://purl.obolibrary.org/obo/> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix dct:  <http://purl.org/dc/terms/> .
+@prefix sbo:  <http://biomodels.net/SBO/SBO_> .
+
+################################################################
+# Ontology header
+################################################################
+
+<https://w3id.org/bondgraph/bfo> a owl:Ontology ;
+  owl:versionIRI <https://w3id.org/bondgraph/bfo/0.1.0> ;
+  owl:imports <https://w3id.org/bondgraph/core> ,
+              <https://w3id.org/bondgraph/biochem> ,
+              <http://purl.obolibrary.org/obo/iao.owl> ,
+              <http://purl.obolibrary.org/obo/ro.owl> ;
+  dct:title "Bond Graph Ontology -- Basic Formal Ontology bridge"@en ;
+  dct:description """Pins the bond graph ontology to BFO in two layers.
+
+The first layer says what the modelling constructs ARE. A bond graph, its elements,
+bonds, ports, variables, parameters and constitutive relations are representations:
+every bg:BondGraphEntity is an IAO information content entity, hence a BFO generically
+dependent continuant.
+
+The second layer says what they are ABOUT. It introduces the physical entities a
+physiological bond graph represents -- compartments and species pools as material
+entities, reactions and transport as processes, chemical potentials and amounts as
+qualities, flow rates as process profiles, and the capacity to store, dissipate or
+transduce energy as dispositions -- and links the two layers with IAO 'is about'.
+
+The distinction the second layer buys is the one bond graph practice already assumes
+but cannot state: an EFFORT denotes a quality of an enduring thing, while a FLOW
+denotes a rate, which in BFO is a process profile of an occurrent. Effort and flow are
+not two species of one kind of property; they sit in different BFO branches. The
+product of the two is a power, and a power bond denotes the energy transfer process
+itself.
+
+Nothing in bondgraph-core.ttl or bondgraph-biochem.ttl is modified or re-axiomatised;
+this module only adds. A user who does not want the BFO import closure simply does not
+import it."""@en ;
+  skos:editorialNote """Import provenance, as resolved on authoring:
+  http://purl.obolibrary.org/obo/bfo.owl -> version IRI
+      http://purl.obolibrary.org/obo/bfo/2019-08-26/bfo.owl  (classes only; this
+      release declares no object properties, so all relations below come from IAO/RO)
+  http://purl.obolibrary.org/obo/iao.owl -> version IRI
+      http://purl.obolibrary.org/obo/iao/2026-03-30/iao.owl  (carries the BFO classes)
+  http://purl.obolibrary.org/obo/ro.owl  -> version IRI
+      http://purl.obolibrary.org/obo/ro/releases/2026-09-04/ro.owl
+bfo.owl is deliberately NOT imported directly: the BFO classes already arrive through
+the IAO release, and importing a second, older BFO serialisation alongside it risks
+mixing two axiomatisations of the same IRIs."""@en ;
+  skos:scopeNote """Current RO renames two relations this module needs: 'inheres in'
+is now obo:RO_0000052 'characteristic of' (functional) and 'bearer of' is now
+obo:RO_0000053 'has characteristic'. BFO 2020's 'has process profile' has no
+counterpart in the IAO/RO closure at the versions above, so bgf:processProfileOf is
+declared locally and should be replaced by the BFO relation once it is reachable."""@en .
+
+dct:title       a owl:AnnotationProperty .
+dct:description a owl:AnnotationProperty .
+skos:prefLabel     a owl:AnnotationProperty .
+skos:altLabel      a owl:AnnotationProperty .
+skos:definition    a owl:AnnotationProperty .
+skos:example       a owl:AnnotationProperty .
+skos:scopeNote     a owl:AnnotationProperty .
+skos:editorialNote a owl:AnnotationProperty .
+skos:closeMatch    a owl:AnnotationProperty .
+skos:relatedMatch  a owl:AnnotationProperty .
+
+################################################################
+# Layer 1 -- the modelling constructs are information
+################################################################
+
+bg:BondGraphEntity rdfs:subClassOf obo:IAO_0000030 ;
+  skos:editorialNote """Everything in the core is a representation, so the whole
+ontology lands in one BFO branch: generically dependent continuant, via IAO
+information content entity. That is the correct placement, and it is also why layer 1
+on its own is nearly vacuous -- the work is done by layer 2."""@en .
+
+# Composition in a bond graph is genuine parthood between information entities, so it
+# specialises BFO has_part. Note that obo:BFO_0000051 is transitive: ports therefore
+# become parts of the graphs their elements belong to. bg:hasPort and bg:hasComponent
+# remain simple properties, so the core's qualified cardinality axioms are unaffected.
+bg:hasComponent rdfs:subPropertyOf obo:BFO_0000051 .
+bg:hasPort      rdfs:subPropertyOf obo:BFO_0000051 .
+
+# bg:hasEnd is deliberately NOT parthood: a bond's ends belong to the elements they
+# sit on, not to the bond.
+bg:hasEnd skos:editorialNote
+  "Not aligned to BFO parthood -- a bond is attached to its ports, it does not have them as parts."@en .
+
+bg:Port skos:editorialNote
+  """No referent in the represented-reality layer. A port is an artefact of the
+notation: it is where a bond may attach, and nothing in the physical system
+corresponds to it."""@en .
+
+bg:Causality skos:editorialNote
+  """Likewise purely representational. Causality is a property of the computation, not
+of the physical system; the same physical system admits several causal assignments."""@en .
+
+################################################################
+# Layer 2 -- represented reality: independent continuants
+################################################################
+
+bgf:PhysicalSystem a owl:Class ;
+  rdfs:subClassOf obo:BFO_0000040 ;
+  rdfs:label "physical system"@en ;
+  skos:definition "The portion of physical reality that a whole bond graph is about."@en .
+
+bgf:PhysicalCompartment a owl:Class ;
+  rdfs:subClassOf obo:BFO_0000040 ;
+  rdfs:label "physical compartment"@en ;
+  skos:definition "A bounded region of a physiological system within which species are taken to be well mixed."@en ;
+  skos:closeMatch sbo:0000290 ;
+  skos:editorialNote "Placed as a material entity rather than a BFO site: the compartment is the stuff and its boundary, not the empty volume."@en .
+
+bgf:SpeciesPool a owl:Class ;
+  rdfs:subClassOf obo:BFO_0000027 ;
+  rdfs:label "species pool"@en ;
+  skos:definition "All the molecules of one chemical species present in one compartment, taken together. A BFO object aggregate: the thing whose amount of substance changes as reactions proceed."@en ;
+  skos:relatedMatch sbo:0000247 ;
+  rdfs:subClassOf [ a owl:Restriction ;
+      owl:onProperty obo:RO_0001025 ; owl:someValuesFrom bgf:PhysicalCompartment ] .
+
+bgf:Reservoir a owl:Class ;
+  rdfs:subClassOf obo:BFO_0000040 ;
+  rdfs:label "reservoir"@en ;
+  skos:definition "A part of the environment large enough that exchange with the system leaves its own state unchanged. What a source element is about."@en .
+
+################################################################
+# Layer 2 -- represented reality: occurrents
+################################################################
+
+bgf:EnergeticProcess a owl:Class ;
+  rdfs:subClassOf obo:BFO_0000015 ;
+  rdfs:label "energetic process"@en ;
+  skos:definition "A process in which energy is transferred, stored, dissipated or transduced."@en .
+
+bgf:EnergyTransferProcess a owl:Class ;
+  rdfs:subClassOf bgf:EnergeticProcess ;
+  rdfs:label "energy transfer process"@en ;
+  skos:definition "The passage of energy between two parts of a physical system. What a power bond is about."@en .
+
+bgf:EnergyStorageProcess a owl:Class ;
+  rdfs:subClassOf bgf:EnergeticProcess ;
+  rdfs:label "energy storage process"@en .
+
+bgf:EnergyDissipationProcess a owl:Class ;
+  rdfs:subClassOf bgf:EnergeticProcess ;
+  rdfs:label "energy dissipation process"@en ;
+  skos:definition "A process in which free energy is irreversibly converted to heat; the process realised by a dissipative disposition."@en .
+
+bgf:EnergyTransductionProcess a owl:Class ;
+  rdfs:subClassOf bgf:EnergeticProcess ;
+  rdfs:label "energy transduction process"@en ;
+  skos:definition "A power-conserving process carrying energy from one physical domain into another."@en .
+
+[] a owl:AllDisjointClasses ;
+  owl:members ( bgf:EnergyTransferProcess bgf:EnergyStorageProcess
+                bgf:EnergyDissipationProcess bgf:EnergyTransductionProcess ) .
+
+bgf:ChemicalReactionProcess a owl:Class ;
+  rdfs:subClassOf bgf:EnergeticProcess ;
+  rdfs:label "chemical reaction process"@en ;
+  skos:definition "An elementary reversible conversion of one set of species into another."@en ;
+  skos:closeMatch sbo:0000176 ;
+  rdfs:subClassOf [ a owl:Restriction ;
+      owl:onProperty obo:RO_0000057 ; owl:someValuesFrom bgf:SpeciesPool ] .
+
+bgf:TransportProcess a owl:Class ;
+  rdfs:subClassOf bgf:EnergeticProcess ;
+  rdfs:label "transport process"@en ;
+  skos:definition "Translocation of a species from one compartment to another without change of chemical identity."@en ;
+  skos:closeMatch sbo:0000655 ;
+  rdfs:subClassOf [ a owl:Restriction ;
+      owl:onProperty obo:RO_0000057 ; owl:someValuesFrom bgf:SpeciesPool ] .
+
+################################################################
+# Layer 2 -- qualities, process profiles, dispositions
+################################################################
+
+bgf:IntensiveProperty a owl:Class ;
+  rdfs:subClassOf obo:BFO_0000019 ;
+  rdfs:label "intensive property"@en ;
+  skos:definition "A quality of a material entity that does not scale with its extent, and that is equalised when two bodies are brought into contact through the corresponding domain. What an effort variable is about."@en ;
+  rdfs:subClassOf [ a owl:Restriction ;
+      owl:onProperty obo:RO_0000052 ; owl:someValuesFrom obo:BFO_0000040 ] .
+
+bgf:ChemicalPotentialProperty a owl:Class ; rdfs:subClassOf bgf:IntensiveProperty ;
+  rdfs:label "chemical potential"@en ; skos:closeMatch sbo:0000303 ;
+  rdfs:subClassOf [ a owl:Restriction ;
+      owl:onProperty obo:RO_0000052 ; owl:someValuesFrom bgf:SpeciesPool ] .
+bgf:HydrostaticPressureProperty a owl:Class ; rdfs:subClassOf bgf:IntensiveProperty ;
+  rdfs:label "hydrostatic pressure"@en .
+bgf:ElectricPotentialProperty a owl:Class ; rdfs:subClassOf bgf:IntensiveProperty ;
+  rdfs:label "electric potential"@en ; skos:closeMatch sbo:0000259 .
+bgf:ThermodynamicTemperatureProperty a owl:Class ; rdfs:subClassOf bgf:IntensiveProperty ;
+  rdfs:label "thermodynamic temperature"@en ; skos:closeMatch sbo:0000147 .
+
+bgf:ExtensiveProperty a owl:Class ;
+  rdfs:subClassOf obo:BFO_0000019 ;
+  rdfs:label "extensive property"@en ;
+  skos:definition "A quality of a material entity that scales with its extent and is conserved under transfer. What a generalized displacement or momentum is about."@en ;
+  rdfs:subClassOf [ a owl:Restriction ;
+      owl:onProperty obo:RO_0000052 ; owl:someValuesFrom obo:BFO_0000040 ] .
+
+bgf:AmountOfSubstanceProperty a owl:Class ; rdfs:subClassOf bgf:ExtensiveProperty ;
+  rdfs:label "amount of substance"@en ; skos:closeMatch sbo:0000361 ;
+  rdfs:subClassOf [ a owl:Restriction ;
+      owl:onProperty obo:RO_0000052 ; owl:someValuesFrom bgf:SpeciesPool ] .
+bgf:VolumeProperty a owl:Class ; rdfs:subClassOf bgf:ExtensiveProperty ;
+  rdfs:label "volume"@en .
+bgf:ElectricChargeProperty a owl:Class ; rdfs:subClassOf bgf:ExtensiveProperty ;
+  rdfs:label "electric charge"@en .
+
+[] a owl:AllDisjointClasses ; owl:members ( bgf:IntensiveProperty bgf:ExtensiveProperty ) .
+
+bgf:processProfileOf a owl:ObjectProperty , owl:FunctionalProperty ;
+  rdfs:label "process profile of"@en ;
+  rdfs:domain obo:BFO_0000144 ;
+  rdfs:range obo:BFO_0000015 ;
+  skos:definition "Relates a process profile to the process it is a profile of."@en ;
+  skos:editorialNote "Local stand-in for the BFO 2020 relation of the same name, which is absent from the IAO and RO releases this module imports. Replace when available."@en .
+
+bgf:RateProcessProfile a owl:Class ;
+  rdfs:subClassOf obo:BFO_0000144 ;
+  rdfs:label "rate process profile"@en ;
+  skos:definition "The rate aspect of an energetic process: how fast the conserved extensive quantity is being carried. What a flow variable is about."@en ;
+  skos:editorialNote "A flow is NOT a quality. It is a profile of an occurrent, which is why it sits in the BFO occurrent branch while its conjugate effort sits among qualities."@en ;
+  rdfs:subClassOf [ a owl:Restriction ;
+      owl:onProperty bgf:processProfileOf ; owl:someValuesFrom bgf:EnergeticProcess ] .
+
+bgf:MolarFlowRateProfile a owl:Class ; rdfs:subClassOf bgf:RateProcessProfile ;
+  rdfs:label "molar flow rate"@en ; skos:closeMatch sbo:0000612 .
+bgf:VolumetricFlowRateProfile a owl:Class ; rdfs:subClassOf bgf:RateProcessProfile ;
+  rdfs:label "volumetric flow rate"@en .
+
+bgf:EnergeticDisposition a owl:Class ;
+  rdfs:subClassOf obo:BFO_0000016 ;
+  rdfs:label "energetic disposition"@en ;
+  skos:definition "A disposition of a material entity to store, dissipate or transduce energy, realised in the corresponding energetic process. What a constitutive parameter is about."@en ;
+  rdfs:subClassOf [ a owl:Restriction ;
+      owl:onProperty obo:RO_0000052 ; owl:someValuesFrom obo:BFO_0000040 ] ,
+    [ a owl:Restriction ;
+      owl:onProperty obo:BFO_0000054 ; owl:allValuesFrom bgf:EnergeticProcess ] ;
+  skos:editorialNote "Stated with owl:allValuesFrom, not someValuesFrom: a disposition need not ever be realised, so asserting the existence of a realising process would be wrong."@en .
+
+bgf:StorageDisposition a owl:Class ; rdfs:subClassOf bgf:EnergeticDisposition ;
+  rdfs:label "storage disposition"@en ;
+  rdfs:subClassOf [ a owl:Restriction ;
+      owl:onProperty obo:BFO_0000054 ; owl:allValuesFrom bgf:EnergyStorageProcess ] .
+bgf:DissipativeDisposition a owl:Class ; rdfs:subClassOf bgf:EnergeticDisposition ;
+  rdfs:label "dissipative disposition"@en ;
+  rdfs:subClassOf [ a owl:Restriction ;
+      owl:onProperty obo:BFO_0000054 ; owl:allValuesFrom bgf:EnergyDissipationProcess ] .
+bgf:TransductiveDisposition a owl:Class ; rdfs:subClassOf bgf:EnergeticDisposition ;
+  rdfs:label "transductive disposition"@en ;
+  rdfs:subClassOf [ a owl:Restriction ;
+      owl:onProperty obo:BFO_0000054 ; owl:allValuesFrom bgf:EnergyTransductionProcess ] .
+
+[] a owl:AllDisjointClasses ;
+  owl:members ( bgf:StorageDisposition bgf:DissipativeDisposition bgf:TransductiveDisposition ) .
+
+################################################################
+# The pin: what each modelling construct is about
+################################################################
+
+bg:BondGraph rdfs:subClassOf
+  [ a owl:Restriction ; owl:onProperty obo:IAO_0000136 ; owl:someValuesFrom bgf:PhysicalSystem ] .
+
+bg:PowerBond rdfs:subClassOf
+  [ a owl:Restriction ; owl:onProperty obo:IAO_0000136 ; owl:someValuesFrom bgf:EnergyTransferProcess ] .
+
+# --- power and energy variables
+bg:Effort rdfs:subClassOf
+  [ a owl:Restriction ; owl:onProperty obo:IAO_0000136 ; owl:someValuesFrom bgf:IntensiveProperty ] .
+bg:Flow rdfs:subClassOf
+  [ a owl:Restriction ; owl:onProperty obo:IAO_0000136 ; owl:someValuesFrom bgf:RateProcessProfile ] .
+bg:GeneralizedDisplacement rdfs:subClassOf
+  [ a owl:Restriction ; owl:onProperty obo:IAO_0000136 ; owl:someValuesFrom bgf:ExtensiveProperty ] .
+bg:GeneralizedMomentum rdfs:subClassOf
+  [ a owl:Restriction ; owl:onProperty obo:IAO_0000136 ; owl:someValuesFrom bgf:ExtensiveProperty ] .
+
+bg:ChemicalPotential rdfs:subClassOf
+  [ a owl:Restriction ; owl:onProperty obo:IAO_0000136 ; owl:someValuesFrom bgf:ChemicalPotentialProperty ] .
+bg:Pressure rdfs:subClassOf
+  [ a owl:Restriction ; owl:onProperty obo:IAO_0000136 ; owl:someValuesFrom bgf:HydrostaticPressureProperty ] .
+bg:Voltage rdfs:subClassOf
+  [ a owl:Restriction ; owl:onProperty obo:IAO_0000136 ; owl:someValuesFrom bgf:ElectricPotentialProperty ] .
+bg:AbsoluteTemperature rdfs:subClassOf
+  [ a owl:Restriction ; owl:onProperty obo:IAO_0000136 ; owl:someValuesFrom bgf:ThermodynamicTemperatureProperty ] .
+bg:MolarFlowRate rdfs:subClassOf
+  [ a owl:Restriction ; owl:onProperty obo:IAO_0000136 ; owl:someValuesFrom bgf:MolarFlowRateProfile ] .
+bg:VolumetricFlowRate rdfs:subClassOf
+  [ a owl:Restriction ; owl:onProperty obo:IAO_0000136 ; owl:someValuesFrom bgf:VolumetricFlowRateProfile ] .
+bg:MolarAmount rdfs:subClassOf
+  [ a owl:Restriction ; owl:onProperty obo:IAO_0000136 ; owl:someValuesFrom bgf:AmountOfSubstanceProperty ] .
+bg:Volume rdfs:subClassOf
+  [ a owl:Restriction ; owl:onProperty obo:IAO_0000136 ; owl:someValuesFrom bgf:VolumeProperty ] .
+bg:ElectricCharge rdfs:subClassOf
+  [ a owl:Restriction ; owl:onProperty obo:IAO_0000136 ; owl:someValuesFrom bgf:ElectricChargeProperty ] .
+
+# --- constitutive parameters denote dispositions
+bg:Resistance rdfs:subClassOf
+  [ a owl:Restriction ; owl:onProperty obo:IAO_0000136 ; owl:someValuesFrom bgf:DissipativeDisposition ] .
+bg:Capacitance rdfs:subClassOf
+  [ a owl:Restriction ; owl:onProperty obo:IAO_0000136 ; owl:someValuesFrom bgf:StorageDisposition ] .
+bg:Inertance rdfs:subClassOf
+  [ a owl:Restriction ; owl:onProperty obo:IAO_0000136 ; owl:someValuesFrom bgf:StorageDisposition ] .
+bg:TransformerModulus rdfs:subClassOf
+  [ a owl:Restriction ; owl:onProperty obo:IAO_0000136 ; owl:someValuesFrom bgf:TransductiveDisposition ] .
+bg:GyratorModulus rdfs:subClassOf
+  [ a owl:Restriction ; owl:onProperty obo:IAO_0000136 ; owl:someValuesFrom bgf:TransductiveDisposition ] .
+
+# --- elements denote dispositions of the system, or its boundary
+bg:StorageElement rdfs:subClassOf
+  [ a owl:Restriction ; owl:onProperty obo:IAO_0000136 ; owl:someValuesFrom bgf:StorageDisposition ] .
+bg:DissipativeElement rdfs:subClassOf
+  [ a owl:Restriction ; owl:onProperty obo:IAO_0000136 ; owl:someValuesFrom bgf:DissipativeDisposition ] .
+bg:Transducer rdfs:subClassOf
+  [ a owl:Restriction ; owl:onProperty obo:IAO_0000136 ; owl:someValuesFrom bgf:TransductiveDisposition ] .
+bg:SourceElement rdfs:subClassOf
+  [ a owl:Restriction ; owl:onProperty obo:IAO_0000136 ; owl:someValuesFrom bgf:Reservoir ] .
+
+# --- junctions denote the shared quantity they enforce
+bg:ZeroJunction rdfs:subClassOf
+  [ a owl:Restriction ; owl:onProperty obo:IAO_0000136 ; owl:someValuesFrom bgf:IntensiveProperty ] ;
+  skos:editorialNote "A 0-junction is about the single intensive property its ports share -- the common potential of a node."@en .
+bg:OneJunction rdfs:subClassOf
+  [ a owl:Restriction ; owl:onProperty obo:IAO_0000136 ; owl:someValuesFrom bgf:RateProcessProfile ] ;
+  skos:editorialNote "A 1-junction is about the single rate its ports share."@en .
+
+# --- biochemical module
+bgb:SpeciesComponent rdfs:subClassOf
+  [ a owl:Restriction ; owl:onProperty obo:IAO_0000136 ; owl:someValuesFrom bgf:SpeciesPool ] ;
+  skos:editorialNote "A Ce component is about the pool itself, and -- inheriting from bg:StorageElement -- about the pool's disposition to store chemical energy. Both hold; obo:IAO_0000136 is not functional."@en .
+bgb:ReactionComponent rdfs:subClassOf
+  [ a owl:Restriction ; owl:onProperty obo:IAO_0000136 ; owl:someValuesFrom bgf:ChemicalReactionProcess ] .
+bgb:MembraneTransportComponent rdfs:subClassOf
+  [ a owl:Restriction ; owl:onProperty obo:IAO_0000136 ; owl:someValuesFrom bgf:TransportProcess ] .
+bgb:CompartmentSubsystem rdfs:subClassOf
+  [ a owl:Restriction ; owl:onProperty obo:IAO_0000136 ; owl:someValuesFrom bgf:PhysicalCompartment ] .
+
+################################################################
+# Domain extensions: electrical, mechanical, hydraulic, thermal
+#
+# The chemical domain above is the pattern; these four follow it. Each domain
+# contributes a bearer (a material entity), a process, one or two intensive
+# properties borne by the bearer, the extensive properties that accumulate, and the
+# rate process profiles of the process.
+#
+# The bearers are deliberately NOT declared pairwise disjoint. One material entity
+# routinely bears qualities in several domains at once -- a coil is a conducting body
+# and a thermal body; a muscle fibre is a mechanical body and a species pool -- and
+# that overlap is exactly what a transformer or gyrator represents: a single bearer
+# whose qualities in two domains are constitutively linked. The qualities and the rate
+# profiles themselves ARE pairwise disjoint, since no one quality is both a
+# temperature and a force.
+#
+# The magnetic domain of the core (bg:magneticDomain, bg:MagnetomotiveForce,
+# bg:MagneticFluxRate) is not extended here.
+################################################################
+
+# ---------------------------------------------------------------- bearers
+
+bgf:ConductingBody a owl:Class ;
+  rdfs:subClassOf obo:BFO_0000040 ;
+  rdfs:label "conducting body"@en ;
+  skos:definition "A material entity that bears an electric potential and an electric charge: a circuit node, an electrode, an electrically continuous region of tissue."@en .
+
+bgf:MechanicalBody a owl:Class ;
+  rdfs:subClassOf obo:BFO_0000040 ;
+  rdfs:label "mechanical body"@en ;
+  skos:definition "A material entity treated as a rigid or lumped-compliant element, bearing position, momentum and the forces applied to it."@en .
+
+bgf:FluidBody a owl:Class ;
+  rdfs:subClassOf obo:BFO_0000040 ;
+  rdfs:label "fluid body"@en ;
+  skos:definition "A connected body of fluid treated as a lumped element: the contents of a vessel segment, a chamber, a compliant reservoir."@en .
+
+bgf:ThermalBody a owl:Class ;
+  rdfs:subClassOf obo:BFO_0000040 ;
+  rdfs:label "thermal body"@en ;
+  skos:definition "A material entity treated as having a single temperature and a definite entropy content."@en .
+
+# ---------------------------------------------------------------- processes
+
+bgf:ChargeTransportProcess a owl:Class ;
+  rdfs:subClassOf bgf:EnergeticProcess ;
+  rdfs:label "charge transport process"@en ;
+  skos:definition "Movement of electric charge through a conducting body; the process whose rate is an electric current."@en .
+
+bgf:TranslationalMotionProcess a owl:Class ;
+  rdfs:subClassOf bgf:EnergeticProcess ;
+  rdfs:label "translational motion process"@en ;
+  skos:definition "Change of position of a mechanical body; the process whose rate is a linear velocity."@en .
+
+bgf:RotationalMotionProcess a owl:Class ;
+  rdfs:subClassOf bgf:EnergeticProcess ;
+  rdfs:label "rotational motion process"@en ;
+  skos:definition "Change of angular position of a mechanical body; the process whose rate is an angular velocity."@en .
+
+bgf:FluidFlowProcess a owl:Class ;
+  rdfs:subClassOf bgf:EnergeticProcess ;
+  rdfs:label "fluid flow process"@en ;
+  skos:definition "Displacement of fluid from one body to another; the process whose rate is a volumetric flow rate."@en .
+
+bgf:HeatTransferProcess a owl:Class ;
+  rdfs:subClassOf bgf:EnergeticProcess ;
+  rdfs:label "heat transfer process"@en ;
+  skos:definition "Transfer of thermal energy between bodies; the process whose rate, in the power-conjugate formulation, is an entropy flow rate."@en .
+
+# These classify processes by physical domain, which cuts across the classification by
+# energetic role (transfer, storage, dissipation, transduction) given earlier. A fluid
+# flow process through a resistance is both a fluid flow process and a dissipation
+# process, so the two groupings are not merged and only the role grouping is disjoint.
+
+# ---------------------------------------------------------------- intensive properties
+
+bgf:ForceProperty a owl:Class ; rdfs:subClassOf bgf:IntensiveProperty ;
+  rdfs:label "force"@en ;
+  skos:definition "The mechanical effort borne by a body: what is shared across the ports of a common-force junction."@en ;
+  skos:editorialNote "Arguably a BFO relational quality (obo:BFO_0000145), since a force is exerted by one body on another. Left as a plain quality of the body it acts on until the two-body case is needed."@en ;
+  rdfs:subClassOf [ a owl:Restriction ;
+      owl:onProperty obo:RO_0000052 ; owl:someValuesFrom bgf:MechanicalBody ] .
+
+bgf:TorqueProperty a owl:Class ; rdfs:subClassOf bgf:IntensiveProperty ;
+  rdfs:label "torque"@en ;
+  rdfs:subClassOf [ a owl:Restriction ;
+      owl:onProperty obo:RO_0000052 ; owl:someValuesFrom bgf:MechanicalBody ] .
+
+# bearers for the intensive properties already declared above
+bgf:ElectricPotentialProperty rdfs:subClassOf [ a owl:Restriction ;
+    owl:onProperty obo:RO_0000052 ; owl:someValuesFrom bgf:ConductingBody ] .
+bgf:HydrostaticPressureProperty rdfs:subClassOf [ a owl:Restriction ;
+    owl:onProperty obo:RO_0000052 ; owl:someValuesFrom bgf:FluidBody ] .
+bgf:ThermodynamicTemperatureProperty rdfs:subClassOf [ a owl:Restriction ;
+    owl:onProperty obo:RO_0000052 ; owl:someValuesFrom bgf:ThermalBody ] .
+
+[] a owl:AllDisjointClasses ;
+  owl:members ( bgf:ChemicalPotentialProperty bgf:HydrostaticPressureProperty
+                bgf:ElectricPotentialProperty bgf:ThermodynamicTemperatureProperty
+                bgf:ForceProperty bgf:TorqueProperty ) .
+
+# ---------------------------------------------------------------- extensive properties
+
+bgf:LinearDisplacementProperty a owl:Class ; rdfs:subClassOf bgf:ExtensiveProperty ;
+  rdfs:label "linear displacement"@en ;
+  skos:definition "The position of a mechanical body relative to its reference configuration; the time integral of its linear velocity."@en ;
+  skos:editorialNote "Frame-relative, so a candidate for obo:BFO_0000145 relational quality once reference frames are modelled."@en ;
+  rdfs:subClassOf [ a owl:Restriction ;
+      owl:onProperty obo:RO_0000052 ; owl:someValuesFrom bgf:MechanicalBody ] .
+
+bgf:AngularDisplacementProperty a owl:Class ; rdfs:subClassOf bgf:ExtensiveProperty ;
+  rdfs:label "angular displacement"@en ;
+  rdfs:subClassOf [ a owl:Restriction ;
+      owl:onProperty obo:RO_0000052 ; owl:someValuesFrom bgf:MechanicalBody ] .
+
+bgf:LinearMomentumProperty a owl:Class ; rdfs:subClassOf bgf:ExtensiveProperty ;
+  rdfs:label "linear momentum"@en ;
+  rdfs:subClassOf [ a owl:Restriction ;
+      owl:onProperty obo:RO_0000052 ; owl:someValuesFrom bgf:MechanicalBody ] .
+
+bgf:AngularMomentumProperty a owl:Class ; rdfs:subClassOf bgf:ExtensiveProperty ;
+  rdfs:label "angular momentum"@en ;
+  rdfs:subClassOf [ a owl:Restriction ;
+      owl:onProperty obo:RO_0000052 ; owl:someValuesFrom bgf:MechanicalBody ] .
+
+bgf:PressureMomentumProperty a owl:Class ; rdfs:subClassOf bgf:ExtensiveProperty ;
+  rdfs:label "pressure momentum"@en ;
+  skos:definition "The time integral of pressure on a fluid body; the state of a fluid inertance."@en ;
+  rdfs:subClassOf [ a owl:Restriction ;
+      owl:onProperty obo:RO_0000052 ; owl:someValuesFrom bgf:FluidBody ] .
+
+bgf:MagneticFluxLinkageProperty a owl:Class ; rdfs:subClassOf bgf:ExtensiveProperty ;
+  rdfs:label "magnetic flux linkage"@en ;
+  skos:definition "The time integral of the voltage across a conducting body; the state of an electrical inertance."@en ;
+  rdfs:subClassOf [ a owl:Restriction ;
+      owl:onProperty obo:RO_0000052 ; owl:someValuesFrom bgf:ConductingBody ] .
+
+bgf:EntropyProperty a owl:Class ; rdfs:subClassOf bgf:ExtensiveProperty ;
+  rdfs:label "entropy"@en ;
+  skos:definition "The entropy content of a thermal body; the generalized displacement of the thermal domain."@en ;
+  rdfs:subClassOf [ a owl:Restriction ;
+      owl:onProperty obo:RO_0000052 ; owl:someValuesFrom bgf:ThermalBody ] .
+
+bgf:ElectricChargeProperty rdfs:subClassOf [ a owl:Restriction ;
+    owl:onProperty obo:RO_0000052 ; owl:someValuesFrom bgf:ConductingBody ] .
+bgf:VolumeProperty rdfs:subClassOf [ a owl:Restriction ;
+    owl:onProperty obo:RO_0000052 ; owl:someValuesFrom bgf:FluidBody ] .
+
+[] a owl:AllDisjointClasses ;
+  owl:members ( bgf:AmountOfSubstanceProperty bgf:VolumeProperty bgf:ElectricChargeProperty
+                bgf:LinearDisplacementProperty bgf:AngularDisplacementProperty
+                bgf:LinearMomentumProperty bgf:AngularMomentumProperty
+                bgf:PressureMomentumProperty bgf:MagneticFluxLinkageProperty
+                bgf:EntropyProperty ) .
+
+# ---------------------------------------------------------------- rate process profiles
+
+bgf:ElectricCurrentProfile a owl:Class ; rdfs:subClassOf bgf:RateProcessProfile ;
+  rdfs:label "electric current"@en ;
+  rdfs:subClassOf [ a owl:Restriction ;
+      owl:onProperty bgf:processProfileOf ; owl:someValuesFrom bgf:ChargeTransportProcess ] .
+
+bgf:LinearVelocityProfile a owl:Class ; rdfs:subClassOf bgf:RateProcessProfile ;
+  rdfs:label "linear velocity"@en ;
+  rdfs:subClassOf [ a owl:Restriction ;
+      owl:onProperty bgf:processProfileOf ; owl:someValuesFrom bgf:TranslationalMotionProcess ] .
+
+bgf:AngularVelocityProfile a owl:Class ; rdfs:subClassOf bgf:RateProcessProfile ;
+  rdfs:label "angular velocity"@en ;
+  rdfs:subClassOf [ a owl:Restriction ;
+      owl:onProperty bgf:processProfileOf ; owl:someValuesFrom bgf:RotationalMotionProcess ] .
+
+bgf:EntropyFlowRateProfile a owl:Class ; rdfs:subClassOf bgf:RateProcessProfile ;
+  rdfs:label "entropy flow rate"@en ;
+  skos:definition "The rate at which entropy is carried by a heat transfer process. The power-conjugate flow of the thermal domain: temperature times entropy flow rate is a thermal power."@en ;
+  rdfs:subClassOf [ a owl:Restriction ;
+      owl:onProperty bgf:processProfileOf ; owl:someValuesFrom bgf:HeatTransferProcess ] .
+
+bgf:VolumetricFlowRateProfile rdfs:subClassOf [ a owl:Restriction ;
+    owl:onProperty bgf:processProfileOf ; owl:someValuesFrom bgf:FluidFlowProcess ] .
+
+[] a owl:AllDisjointClasses ;
+  owl:members ( bgf:MolarFlowRateProfile bgf:VolumetricFlowRateProfile
+                bgf:ElectricCurrentProfile bgf:LinearVelocityProfile
+                bgf:AngularVelocityProfile bgf:EntropyFlowRateProfile ) .
+
+# ---------------------------------------------------------------- the pin, per domain
+
+bg:Force rdfs:subClassOf
+  [ a owl:Restriction ; owl:onProperty obo:IAO_0000136 ; owl:someValuesFrom bgf:ForceProperty ] .
+bg:Torque rdfs:subClassOf
+  [ a owl:Restriction ; owl:onProperty obo:IAO_0000136 ; owl:someValuesFrom bgf:TorqueProperty ] .
+
+bg:ElectricCurrent rdfs:subClassOf
+  [ a owl:Restriction ; owl:onProperty obo:IAO_0000136 ; owl:someValuesFrom bgf:ElectricCurrentProfile ] .
+bg:LinearVelocity rdfs:subClassOf
+  [ a owl:Restriction ; owl:onProperty obo:IAO_0000136 ; owl:someValuesFrom bgf:LinearVelocityProfile ] .
+bg:AngularVelocity rdfs:subClassOf
+  [ a owl:Restriction ; owl:onProperty obo:IAO_0000136 ; owl:someValuesFrom bgf:AngularVelocityProfile ] .
+bg:EntropyFlowRate rdfs:subClassOf
+  [ a owl:Restriction ; owl:onProperty obo:IAO_0000136 ; owl:someValuesFrom bgf:EntropyFlowRateProfile ] .
+
+bg:Displacement rdfs:subClassOf
+  [ a owl:Restriction ; owl:onProperty obo:IAO_0000136 ; owl:someValuesFrom bgf:LinearDisplacementProperty ] .
+bg:Angle rdfs:subClassOf
+  [ a owl:Restriction ; owl:onProperty obo:IAO_0000136 ; owl:someValuesFrom bgf:AngularDisplacementProperty ] .
+bg:Entropy rdfs:subClassOf
+  [ a owl:Restriction ; owl:onProperty obo:IAO_0000136 ; owl:someValuesFrom bgf:EntropyProperty ] .
+
+bg:LinearMomentum rdfs:subClassOf
+  [ a owl:Restriction ; owl:onProperty obo:IAO_0000136 ; owl:someValuesFrom bgf:LinearMomentumProperty ] .
+bg:AngularMomentum rdfs:subClassOf
+  [ a owl:Restriction ; owl:onProperty obo:IAO_0000136 ; owl:someValuesFrom bgf:AngularMomentumProperty ] .
+bg:PressureMomentum rdfs:subClassOf
+  [ a owl:Restriction ; owl:onProperty obo:IAO_0000136 ; owl:someValuesFrom bgf:PressureMomentumProperty ] .
+bg:FluxLinkage rdfs:subClassOf
+  [ a owl:Restriction ; owl:onProperty obo:IAO_0000136 ; owl:someValuesFrom bgf:MagneticFluxLinkageProperty ] .

@@ -36,8 +36,15 @@ ENTITY_TYPES = [OWL.Class, OWL.ObjectProperty, OWL.DatatypeProperty,
 def load(paths):
     g = Graph()
     for p in paths:
-        g.parse(str(p), format="turtle")
+        g.parse(str(p), format="xml" if Path(p).suffix == ".owl" else "turtle")
     return g
+
+
+def declared_entities(paths):
+    """IRIs declared as OWL entities in files parsed for declarations only."""
+    g = load(paths)
+    return {s for s in g.subjects(RDF.type, None)
+            if isinstance(s, URIRef) and {t for t in g.objects(s, RDF.type)} & set(ENTITY_TYPES)}
 
 
 def punning(g):
@@ -97,9 +104,10 @@ def simple_only_violations(g, ns):
     return bad
 
 
-def undeclared(g):
+def undeclared(g, imported=frozenset()):
     declared = {s for s in g.subjects(RDF.type, None)
                 if isinstance(s, URIRef) and {t for t in g.objects(s, RDF.type)} & set(ENTITY_TYPES)}
+    declared |= set(imported)
     external = ("http://www.w3.org/", "http://purl.org/dc/terms/",
                 "http://biomodels.net/SBO/")
     used_class, used_prop = set(), set()
@@ -121,12 +129,13 @@ def undeclared(g):
     return miss
 
 
-def section(paths, label):
+def section(paths, label, import_paths=()):
     g = load(paths)
+    imported = declared_entities(import_paths) if import_paths else frozenset()
     ns = non_simple(g)
     pun = punning(g)
     viol = simple_only_violations(g, ns)
-    miss = undeclared(g)
+    miss = undeclared(g, imported)
     out = [f"### {label}\n",
            f"- triples: {len(g)}",
            f"- non-simple object properties (chain or transitive): "
@@ -136,6 +145,8 @@ def section(paths, label):
            f"- non-simple property in a simple-only axiom: "
            + ("none" if not viol else
               "; ".join(f"{p.split('#')[-1]} {w}" for p, w in viol)),
+           f"- IRIs resolved against the import closure: "
+           + (f"{len(imported)} declared in imports" if imported else "no imports loaded"),
            f"- undeclared IRIs in class/property position: "
            + ("none" if not miss else ", ".join(m.split('#')[-1] for m in miss)),
            ]
@@ -146,9 +157,19 @@ def section(paths, label):
 def report():
     core = [ROOT / "bondgraph-core.ttl"]
     both = core + [ROOT / "bondgraph-biochem.ttl"]
-    s1, ok1 = section(core, "`bondgraph-core.ttl`")
-    s2, ok2 = section(both, "`bondgraph-core.ttl` + `bondgraph-biochem.ttl`")
-    return "\n\n".join([s1, s2]), (ok1 and ok2)
+    bridge = both + [ROOT / "bondgraph-bfo.ttl"]
+    sections, oks = [], []
+    for paths, label in ((core, "`bondgraph-core.ttl`"),
+                         (both, "`bondgraph-core.ttl` + `bondgraph-biochem.ttl`"),
+                         (bridge, "the two modules + `bondgraph-bfo.ttl`")):
+        if not all(q.exists() for q in paths):
+            continue
+        imports = [q for q in (ROOT / "imports/iao.owl", ROOT / "imports/ro.owl")
+                   if q.exists()] if "bondgraph-bfo.ttl" in str(paths[-1]) else []
+        text, ok = section(paths, label, imports)
+        sections.append(text)
+        oks.append(ok)
+    return "\n\n".join(sections), all(oks)
 
 
 if __name__ == "__main__":
