@@ -154,7 +154,7 @@ def build_reaction_chain():
     inds += bonds
 
     all_different(g, inds)
-    return "example-reaction-chain.ttl", g
+    return "examples/reaction-chain.ttl", g
 
 
 # ------------------------------------------------------------------ test cases
@@ -403,9 +403,10 @@ BUILDERS = [build_reaction_chain, t_ok_rl_circuit, t_ok_derivative_causality,
             t_ok_multidomain_bearer, t_conflict_effort_kind_clash]
 
 if __name__ == "__main__":
-    (OUT / "tests").mkdir(exist_ok=True)
+    for sub in ("tests", "examples"):
+        (OUT / sub).mkdir(exist_ok=True)
     for fn in BUILDERS:
         name, g = fn()
-        target = OUT / name if name.startswith("example") else OUT / "tests" / name
+        target = OUT / name if "/" in name else OUT / "tests" / name
         g.serialize(destination=str(target), format="turtle")
         print(f"{target.relative_to(OUT)}: {len(g)} triples")

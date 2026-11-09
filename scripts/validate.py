@@ -32,10 +32,10 @@ BG = Namespace("https://w3id.org/bondgraph/core#")
 BGB = Namespace("https://w3id.org/bondgraph/biochem#")
 
 IRI_TO_FILE = {
-    "https://w3id.org/bondgraph/core": ROOT / "bondgraph-core.ttl",
-    "https://w3id.org/bondgraph/biochem": ROOT / "bondgraph-biochem.ttl",
-    "https://w3id.org/bondgraph/bfo": ROOT / "bondgraph-bfo.ttl",
-    "https://w3id.org/bondgraph/examples/reaction-chain": ROOT / "example-reaction-chain.ttl",
+    "https://w3id.org/bondgraph/core": ROOT / "src/bondgraph-core.ttl",
+    "https://w3id.org/bondgraph/biochem": ROOT / "src/domains/bondgraph-biochem.ttl",
+    "https://w3id.org/bondgraph/bfo": ROOT / "src/bondgraph-bfo.ttl",
+    "https://w3id.org/bondgraph/examples/reaction-chain": ROOT / "examples/reaction-chain.ttl",
     "http://purl.obolibrary.org/obo/iao.owl": ROOT / "imports/iao.owl",
     "http://purl.obolibrary.org/obo/ro.owl": ROOT / "imports/ro.owl",
 }
@@ -126,9 +126,9 @@ BGF = Namespace("https://w3id.org/bondgraph/bfo#")
 
 # (model file, tag, expected consistency)
 MODELS = [
-    (ROOT / "bondgraph-core.ttl", "core", True),
-    (ROOT / "bondgraph-biochem.ttl", "biochem", True),
-    (ROOT / "example-reaction-chain.ttl", "example-reaction-chain", True),
+    (ROOT / "src/bondgraph-core.ttl", "core", True),
+    (ROOT / "src/domains/bondgraph-biochem.ttl", "biochem", True),
+    (ROOT / "examples/reaction-chain.ttl", "example-reaction-chain", True),
     (ROOT / "tests/test-ok-rl-circuit.ttl", "ok-rl-circuit", True),
     (ROOT / "tests/test-ok-derivative-causality.ttl", "ok-derivative-causality", True),
     (ROOT / "tests/test-conflict-two-effort-sources.ttl", "conflict-two-effort-sources", False),
@@ -138,7 +138,7 @@ MODELS = [
     (ROOT / "tests/test-conflict-double-causality.ttl", "conflict-double-causality", False),
     (ROOT / "tests/test-conflict-signal-causality.ttl", "conflict-signal-causality", False),
     (ROOT / "tests/test-conflict-bond-three-ends.ttl", "conflict-bond-three-ends", False),
-    (ROOT / "bondgraph-bfo.ttl", "bfo-bridge", True),
+    (ROOT / "src/bondgraph-bfo.ttl", "bfo-bridge", True),
     (ROOT / "tests/test-ok-bfo-example.ttl", "ok-bfo-example", True),
     (ROOT / "tests/test-conflict-variable-as-quality.ttl", "conflict-variable-as-quality", False),
     (ROOT / "tests/test-ok-multidomain-bearer.ttl", "ok-multidomain-bearer", True),

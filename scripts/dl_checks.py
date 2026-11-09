@@ -155,9 +155,9 @@ def section(paths, label, import_paths=()):
 
 
 def report():
-    core = [ROOT / "bondgraph-core.ttl"]
-    both = core + [ROOT / "bondgraph-biochem.ttl"]
-    bridge = both + [ROOT / "bondgraph-bfo.ttl"]
+    core = [ROOT / "src/bondgraph-core.ttl"]
+    both = core + [ROOT / "src/domains/bondgraph-biochem.ttl"]
+    bridge = both + [ROOT / "src/bondgraph-bfo.ttl"]
     sections, oks = [], []
     for paths, label in ((core, "`bondgraph-core.ttl`"),
                          (both, "`bondgraph-core.ttl` + `bondgraph-biochem.ttl`"),

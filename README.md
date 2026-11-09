@@ -7,10 +7,10 @@ with a separate chemical-domain extension for physiological modelling.
 
 | File | Contents |
 |---|---|
-| [bondgraph-core.ttl](bondgraph-core.ttl) | The core ontology. 93 classes, 27 object properties, 5 data properties, 16 annotation properties, 11 named individuals, 1348 triples. |
-| [bondgraph-biochem.ttl](bondgraph-biochem.ttl) | Chemical/physiological extension: Ce, Re, chemostat, flowstat, stoichiometric and electrogenic transducers, compartments. 14 classes, 191 triples. |
-| [bondgraph-bfo.ttl](bondgraph-bfo.ttl) | Bridge pinning the ontology to BFO, via IAO and RO. 49 new classes, 1 new object property, 601 triples. |
-| [example-reaction-chain.ttl](example-reaction-chain.ttl) | Exemplar model: the reversible chain A ⇌ B ⇌ C, with species B on a shared common-potential node. |
+| [bondgraph-core.ttl](src/bondgraph-core.ttl) | The core ontology. 93 classes, 27 object properties, 5 data properties, 16 annotation properties, 11 named individuals, 1348 triples. |
+| [bondgraph-biochem.ttl](src/domains/bondgraph-biochem.ttl) | Chemical/physiological extension: Ce, Re, chemostat, flowstat, stoichiometric and electrogenic transducers, compartments. 14 classes, 191 triples. |
+| [bondgraph-bfo.ttl](src/bondgraph-bfo.ttl) | Bridge pinning the ontology to BFO, via IAO and RO. 49 new classes, 1 new object property, 601 triples. |
+| [reaction-chain.ttl](examples/reaction-chain.ttl) | Exemplar model: the reversible chain A ⇌ B ⇌ C, with species B on a shared common-potential node. |
 | [tests/](tests/) | Nine regression models: two well-formed (`test-ok-rl-circuit`, `test-ok-derivative-causality`) and seven deliberately malformed (`test-conflict-*`). The other three consistent models in the validation table are the two ontology modules and the exemplar, which live outside this directory. |
 | [reasoner-report.md](reasoner-report.md) | HermiT output for every model and entailment test. |
 | [build_models.py](scripts/build_models.py) | Generates the exemplar and the test models. |
@@ -231,7 +231,7 @@ The DL check is targeted, not a full profile validation: the OWL API's `OWL2DLPr
 needs a JDK and only a JRE was available. HermiT's clean run is corroborating evidence,
 since it rejects non-simple properties in number restrictions outright.
 
-To reproduce: `python scripts/build_models.py && python scripts/validate.py`
+To reproduce: `uv run scripts/build_models.py && uv run scripts/validate.py`
 (needs `rdflib`, `owlready2` for its bundled HermiT, and a JVM).
 
 ## Known gaps
