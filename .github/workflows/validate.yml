@@ -1,0 +1,87 @@
+# Destination: .github/workflows/validate.yml
+#
+# Reasons over every model with HermiT, regenerates the derived files and checks they
+# agree with what is committed, then publishes the ontology to GitHub Pages.
+#
+# Pages is configured with build_type: workflow, so this workflow is what deploys it.
+# The site is assembled fresh on every run, which is why dist/ and site/ are not
+# committed: there is nothing to go stale.
+#
+# HermiT's JVM comes from the jdk4py wheel, already a declared dependency, so no
+# separate Java toolchain is needed.
+
+name: validate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: validate-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install uv and the locked dependencies
+        run: |
+          pip install uv
+          uv sync --frozen
+
+      - name: Generate the exemplar and regression models
+        run: uv run scripts/build_models.py
+
+      # The generated models are committed, and their serialisation is byte-stable,
+      # so a difference here means someone edited a generated file by hand or changed
+      # the generator without regenerating.
+      - name: Confirm the committed models are in step with the generator
+        run: git diff --exit-code -- examples tests
+
+      # Downloads iao.owl and ro.owl into imports/ on first run, then reasons over
+      # every module and test case. Exits non-zero on any mismatch.
+      - name: Reason over every model with HermiT
+        run: uv run scripts/validate.py
+
+      - name: Show the reasoner report
+        if: always()
+        run: cat reasoner-report.md
+
+      # Each generated serialisation is parsed back and asserted isomorphic to its
+      # Turtle source, so a serialiser that drops structure fails the build.
+      - name: Generate RDF/XML, JSON-LD and N-Triples
+        run: uv run scripts/build_serialisations.py
+
+      - name: Assemble the Pages site
+        run: uv run scripts/build_site.py
+
+      - name: Upload the site
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  deploy:
+    needs: validate
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
