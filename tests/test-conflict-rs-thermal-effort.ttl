@@ -1,0 +1,57 @@
+@prefix bg: <https://w3id.org/bondgraph/core#> .
+@prefix ex: <https://w3id.org/bondgraph/tests/conflict-rs-thermal-effort#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<https://w3id.org/bondgraph/tests/conflict-rs-thermal-effort> a owl:Ontology ;
+    rdfs:label "Causality conflict: the thermal port of an RS asserted effort-determining"@en ;
+    owl:imports <https://w3id.org/bondgraph/core>,
+        <https://w3id.org/bondgraph/thermal> .
+
+ex:p_elec a owl:NamedIndividual,
+        bg:PowerPort ;
+    bg:hasEffort ex:e_p_elec ;
+    bg:hasFlow ex:f_p_elec ;
+    bg:inEnergyDomain bg:electricalDomain ;
+    bg:portIndex "0"^^xsd:nonNegativeInteger ;
+    bg:portOf ex:RS1 .
+
+ex:p_therm a owl:NamedIndividual,
+        bg:PowerPort ;
+    bg:hasCausality bg:effortOut ;
+    bg:hasEffort ex:e_p_therm ;
+    bg:hasFlow ex:f_p_therm ;
+    bg:inEnergyDomain bg:thermalDomain ;
+    bg:portIndex "1"^^xsd:nonNegativeInteger ;
+    bg:portOf ex:RS1 .
+
+ex:R_param a owl:NamedIndividual,
+        bg:Resistance .
+
+ex:e_p_elec a owl:NamedIndividual,
+        bg:Voltage ;
+    bg:conjugateTo ex:f_p_elec ;
+    bg:symbol "e_elec"^^xsd:string .
+
+ex:e_p_therm a owl:NamedIndividual,
+        bg:AbsoluteTemperature ;
+    bg:conjugateTo ex:f_p_therm ;
+    bg:symbol "e_therm"^^xsd:string .
+
+ex:RS1 a owl:NamedIndividual,
+        bg:DissipativeSource ;
+    bg:hasParameter ex:R_param .
+
+ex:f_p_elec a owl:NamedIndividual,
+        bg:ElectricCurrent ;
+    bg:symbol "f_elec"^^xsd:string .
+
+ex:f_p_therm a owl:NamedIndividual,
+        bg:EntropyFlowRate ;
+    bg:symbol "f_therm"^^xsd:string .
+
+[] a owl:AllDifferent ;
+    owl:distinctMembers ( ex:RS1 ex:R_param ex:p_elec ex:e_p_elec ex:f_p_elec ex:p_therm ex:e_p_therm ex:f_p_therm ) .
+

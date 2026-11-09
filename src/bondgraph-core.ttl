@@ -12,7 +12,7 @@
 ################################################################
 
 <https://w3id.org/bondgraph/core> a owl:Ontology ;
-  owl:versionIRI <https://w3id.org/bondgraph/core/0.1.0> ;
+  owl:versionIRI <https://w3id.org/bondgraph/core/0.2.0> ;
   dct:title "Bond Graph Ontology Core"@en ;
   dct:description """A domain-neutral OWL 2 DL core for the bond graph formalism: bond
 graphs, power bonds, ports, the standard element set (R, C, I, Se, Sf, TF, GY, 0, 1),
@@ -30,7 +30,7 @@ propagation rules of causality, which are purely combinatorial and therefore
 decidable. A causality conflict in a modelled graph surfaces as an OWL
 inconsistency. Numeric semantics is attached by reference, as bg:constitutiveEquation
 annotations on bg:ConstitutiveRelation individuals and classes."""@en ;
-  skos:editorialNote """Version 0.1.0, a first draft of the core. The namespace
+  skos:editorialNote """Version 0.2.0. The namespace
 https://w3id.org/bondgraph/core# is a placeholder and should be rebased onto a
 registered, dereferenceable IRI before publication; no w3id redirect has been
 registered for it."""@en ;
@@ -552,6 +552,34 @@ bg:Resistor a owl:Class ;
   bg:causalityRule "Indifferent: either causality is admissible unless the constitutive relation is non-invertible."@en ;
   rdfs:subClassOf
     [ a owl:Restriction ; owl:onProperty bg:hasParameter ; owl:someValuesFrom bg:Resistance ] .
+
+bg:DissipativeSource a owl:Class ;
+  rdfs:subClassOf bg:DissipativeElement , bg:TwoPortElement ;
+  rdfs:label "dissipative source"@en ;
+  skos:altLabel "RS element"@en ;
+  bg:standardSymbol "RS" ;
+  skos:definition "A dissipative element that does not destroy the energy it removes from one domain but emits it into the thermal domain as an entropy flow. The element a resistor becomes once the heat it produces is part of the model."@en ;
+  bg:constitutiveEquation "e_1 = Phi_R(f_1) ; T*f_S = e_1*f_1 , so f_S = e_1*f_1/T ; entropy generated >= 0" ;
+  bg:causalityRule "Every thermal port of an RS is flow-determining: the element computes an entropy flow from a temperature it is given, and can never accept an entropy flow as input. A non-thermal port keeps the indifferent causality of an R element."@en ;
+  skos:scopeNote "Restricted here to the two-port case, which covers both dissipation into a thermal body and conduction between two of them. Multiport RS fields are not modelled."@en ;
+  skos:editorialNote "Energy conservation across the ports, and the non-negativity of the entropy generated, are carried by bg:constitutiveEquation; neither is expressible in OWL."@en ;
+  rdfs:subClassOf
+    [ a owl:Restriction ; owl:onProperty bg:hasPort ;
+      owl:minQualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+      owl:onClass [ a owl:Class ; owl:intersectionOf ( bg:PowerPort
+        [ a owl:Restriction ; owl:onProperty bg:inEnergyDomain ; owl:hasValue bg:thermalDomain ] ) ] ] ,
+    # Asserted unconditionally, like the causality axiom on bg:PowerBond: an RS
+    # emits entropy whether or not a modeller has drawn the stroke. Stating only
+    # that the thermal port is not effort-determining would be too weak -- under
+    # the open-world assumption that leaves it merely unassigned.
+    [ a owl:Restriction ; owl:onProperty bg:hasPort ;
+      owl:minQualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+      owl:onClass [ a owl:Class ; owl:intersectionOf ( bg:FlowDeterminingPort
+        [ a owl:Restriction ; owl:onProperty bg:inEnergyDomain ; owl:hasValue bg:thermalDomain ] ) ] ] ,
+    [ a owl:Restriction ; owl:onProperty bg:hasPort ;
+      owl:maxQualifiedCardinality "0"^^xsd:nonNegativeInteger ;
+      owl:onClass [ a owl:Class ; owl:intersectionOf ( bg:EffortDeterminingPort
+        [ a owl:Restriction ; owl:onProperty bg:inEnergyDomain ; owl:hasValue bg:thermalDomain ] ) ] ] .
 
 bg:SourceElement a owl:Class ;
   rdfs:subClassOf bg:BondGraphElement , bg:OnePortElement ;

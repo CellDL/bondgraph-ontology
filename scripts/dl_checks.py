@@ -158,10 +158,14 @@ def report():
     core = [ROOT / "src/bondgraph-core.ttl"]
     both = core + [ROOT / "src/domains/bondgraph-biochem.ttl"]
     bridge = both + [ROOT / "src/bondgraph-bfo.ttl"]
+    domains = [ROOT / "src/bondgraph-core.ttl",
+               ROOT / "src/domains/bondgraph-hydraulic.ttl",
+               ROOT / "src/domains/bondgraph-thermal.ttl"]
     sections, oks = [], []
     for paths, label in ((core, "`bondgraph-core.ttl`"),
                          (both, "`bondgraph-core.ttl` + `bondgraph-biochem.ttl`"),
-                         (bridge, "the two modules + `bondgraph-bfo.ttl`")):
+                         (bridge, "the two modules + `bondgraph-bfo.ttl`"),
+                         (domains, "core + the hydraulic and thermal domain modules")):
         if not all(q.exists() for q in paths):
             continue
         imports = [q for q in (ROOT / "imports/iao.owl", ROOT / "imports/ro.owl")

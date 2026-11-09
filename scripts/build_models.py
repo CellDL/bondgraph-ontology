@@ -394,13 +394,93 @@ def t_conflict_effort_kind_clash():
     return "test-conflict-effort-kind-clash.ttl", g
 
 
+HYDRAULIC = URIRef("https://w3id.org/bondgraph/hydraulic")
+THERMAL = URIRef("https://w3id.org/bondgraph/thermal")
+BGH = Namespace("https://w3id.org/bondgraph/hydraulic#")
+BGT = Namespace("https://w3id.org/bondgraph/thermal#")
+
+
+def _rs_element(g, ex, thermal_effort_determining):
+    """An electrical resistor as an RS: one electrical port, one thermal port."""
+    rs = declare(g, ex["RS1"], BG.DissipativeSource)
+    rp = declare(g, ex["R_param"], BG.Resistance)
+    g.add((rs, BG.hasParameter, rp))
+    p1, e1, f1 = power_port(g, ex, "p_elec", rs, 0, BG.Voltage, BG.ElectricCurrent,
+                            BG.electricalDomain, "elec")
+    p2, e2, f2 = power_port(g, ex, "p_therm", rs, 1, BG.AbsoluteTemperature,
+                            BG.EntropyFlowRate, BG.thermalDomain, "therm")
+    if thermal_effort_determining:
+        g.add((p2, BG.hasCausality, BG.effortOut))
+    all_different(g, [rs, rp, p1, e1, f1, p2, e2, f2])
+    return g
+
+
+def t_ok_rs_entropy():
+    g, ex = new_graph("https://w3id.org/bondgraph/tests/ok-rs-entropy", [CORE, THERMAL],
+                      "Consistent: a resistor as an RS element delivering entropy "
+                      "to a thermal port")
+    return "test-ok-rs-entropy.ttl", _rs_element(g, ex, False)
+
+
+def t_conflict_rs_thermal_effort():
+    g, ex = new_graph("https://w3id.org/bondgraph/tests/conflict-rs-thermal-effort",
+                      [CORE, THERMAL],
+                      "Causality conflict: the thermal port of an RS asserted "
+                      "effort-determining")
+    return "test-conflict-rs-thermal-effort.ttl", _rs_element(g, ex, True)
+
+
+def t_ok_windkessel():
+    """Se:P -- 0 -- {vessel compliance, Poiseuille resistance}: a two-element Windkessel."""
+    g, ex = new_graph("https://w3id.org/bondgraph/tests/ok-windkessel", [CORE, HYDRAULIC],
+                      "Consistent: a two-element Windkessel in the hydraulic domain")
+    D = BG.hydraulicDomain
+    model = declare(g, ex["wk"], BGH.HydraulicNetwork)
+    src = declare(g, ex["Sf_inflow"], BGH.VolumeFlowSource)
+    comp = declare(g, ex["C_aorta"], BGH.VesselCompliance)
+    res = declare(g, ex["R_periph"], BGH.PoiseuilleResistance)
+    j = declare(g, ex["J0"], BG.ZeroJunction)
+    con = declare(g, ex["c_J0"], BG.CommonEffortConstraint)
+    cp = declare(g, ex["C_param"], BGH.VascularCompliance)
+    rp = declare(g, ex["R_param"], BGH.LaminarResistance)
+    vol = declare(g, ex["V_aorta"], BG.Volume)
+    g.add((j, BG.hasConstitutiveRelation, con))
+    g.add((comp, BG.hasCausalForm, BG.integralCausality))
+    g.add((comp, BG.hasParameter, cp))
+    g.add((comp, BG.hasGeneralizedDisplacement, vol))
+    g.add((res, BG.hasParameter, rp))
+    for e in (src, comp, res, j):
+        g.add((model, BG.hasElement, e))
+    ps, es, fs = power_port(g, ex, "p_src", src, 0, BG.Pressure, BG.VolumetricFlowRate, D, "src")
+    pc, ec, fc = power_port(g, ex, "p_c", comp, 0, BG.Pressure, BG.VolumetricFlowRate, D, "c")
+    pr, er, fr = power_port(g, ex, "p_r", res, 0, BG.Pressure, BG.VolumetricFlowRate, D, "r")
+    g.add((vol, BG.integralOf, fc))
+    inds = [model, src, comp, res, j, con, cp, rp, vol, ps, es, fs, pc, ec, fc, pr, er, fr]
+    js = []
+    for i in (1, 2, 3):
+        pj, ej, fj = power_port(g, ex, f"p_j{i}", j, i - 1, BG.Pressure,
+                                BG.VolumetricFlowRate, D, f"j{i}")
+        js.append(pj)
+        inds += [pj, ej, fj]
+    g.add((j, BG.hasCommonEffort, ec))
+    bonds = [bond(g, ex, "b1", ps, js[0], D),
+             bond(g, ex, "b2", js[1], pc, D),
+             bond(g, ex, "b3", js[2], pr, D)]
+    for b in bonds:
+        g.add((model, BG.hasBond, b))
+    inds += bonds
+    all_different(g, inds)
+    return "test-ok-windkessel.ttl", g
+
+
 BUILDERS = [build_reaction_chain, t_ok_rl_circuit, t_ok_derivative_causality,
             t_conflict_two_effort_sources, t_conflict_sf_into_inertia,
             t_conflict_two_species_on_node, t_conflict_gyrator_causality,
             t_conflict_double_causality, t_conflict_signal_causality,
             t_conflict_bond_three_ends,
             t_ok_bfo_example, t_conflict_variable_as_quality,
-            t_ok_multidomain_bearer, t_conflict_effort_kind_clash]
+            t_ok_multidomain_bearer, t_conflict_effort_kind_clash,
+            t_ok_rs_entropy, t_conflict_rs_thermal_effort, t_ok_windkessel]
 
 if __name__ == "__main__":
     for sub in ("tests", "examples"):

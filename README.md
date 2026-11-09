@@ -7,8 +7,10 @@ with a separate chemical-domain extension for physiological modelling.
 
 | File | Contents |
 |---|---|
-| [bondgraph-core.ttl](src/bondgraph-core.ttl) | The core ontology. 93 classes, 27 object properties, 5 data properties, 16 annotation properties, 11 named individuals, 1349 triples. |
+| [bondgraph-core.ttl](src/bondgraph-core.ttl) | The core ontology. 93 classes, 27 object properties, 5 data properties, 16 annotation properties, 11 named individuals, 1402 triples. |
 | [bondgraph-biochem.ttl](src/domains/bondgraph-biochem.ttl) | Chemical/physiological extension: Ce, Re, chemostat, flowstat, stoichiometric and electrogenic transducers, compartments. 14 classes, 193 triples. |
+| [bondgraph-hydraulic.ttl](src/domains/bondgraph-hydraulic.ttl) | Hydraulic domain: vessel compliance, fluid inertia, Poiseuille and turbulent resistance, a valve, pressure and flow boundaries. 12 classes, 183 triples. |
+| [bondgraph-thermal.ttl](src/domains/bondgraph-thermal.ttl) | Thermal domain: entropy-based thermal capacitance, and the two cases of the RS element. 7 classes, 143 triples. |
 | [bondgraph-bfo.ttl](src/bondgraph-bfo.ttl) | Bridge pinning the ontology to BFO, via IAO and RO. 49 new classes, 1 new object property, 603 triples. |
 | [reaction-chain.ttl](examples/reaction-chain.ttl) | Exemplar model: the reversible chain A ⇌ B ⇌ C, with species B on a shared common-potential node. |
 | [tests/](tests/) | Nine regression models: two well-formed (`test-ok-rl-circuit`, `test-ok-derivative-causality`) and seven deliberately malformed (`test-conflict-*`). The other three consistent models in the validation table are the two ontology modules and the exemplar, which live outside this directory. |
@@ -101,6 +103,14 @@ Dispositions are related to their processes with `owl:allValuesFrom`, not
 `someValuesFrom`: a disposition need not ever be realised, so asserting a realising
 process would be wrong.
 
+**Releases.** All five modules carry the repository's version in their
+`owl:versionIRI`, and move together, even when a module's own content has not
+changed. That is deliberate: the w3id rule maps `/bondgraph/<module>/<version>` onto
+the git tag `v<version>`, so a module whose version drifted from the repository's
+would resolve to a tag that does not contain it. Version 0.2.0 adds the hydraulic and
+thermal modules and the RS element; 0.1.0 remains resolvable and still holds the
+three modules it shipped with.
+
 **Version pinning.** `bfo.owl` resolves to the 2019-08-26 release, which declares
 classes only and no object properties, so every relation comes from IAO
 (2026-03-30) or RO (2026-09-04); the BFO classes arrive through the IAO release.
@@ -130,6 +140,50 @@ disjoint.
 
 The OBO files are fetched on demand into `imports/` by `scripts/validate.py` rather
 than vendored; `imports/` is gitignored.
+
+### What earns a domain module
+
+Domain-specific content sits in two places on purpose. The **quantity kinds** —
+`Voltage`, `Force`, `MolarFlowRate` and the rest of the generalised-variable table —
+are in the core for all seven domains, because that table *is* the formalism rather
+than an extension of it. A module under `src/domains/` is for an **element library**,
+and one is added only where the components differ in their axioms rather than in
+their labels.
+
+By that test the chemical, hydraulic and thermal domains earn modules and the
+electrical and mechanical ones do not:
+
+- `Ce` has a logarithmic constitutive relation rather than `e = q/C`, and `Re` is a
+  two-port dissipator with fixed causality that drives real inference.
+- A Poiseuille resistance is linear in flow while a turbulent resistance and a valve
+  are not, and the core cannot tell them apart.
+- A thermal capacitance is exponential in entropy, not linear.
+
+An electrical capacitor, by contrast, is the core's `C` with its ports pinned to one
+domain. Naming it would add a label and no entailment, so it is left out. This is why
+`src/domains/` is uneven, and the unevenness is the intended outcome rather than an
+omission.
+
+### Dissipation generates entropy: the RS element
+
+The thermal domain forces one change on the core. Dissipation does not destroy
+energy; it moves energy into the thermal domain and generates entropy. A plain `R`
+cannot say that, so the core gains `bg:DissipativeSource` (**RS**), a two-port
+dissipator with at least one thermal port. Every thermal port of an RS is
+flow-determining — the element is handed a temperature and returns an entropy flow,
+and can never accept an entropy flow as input.
+
+That is asserted unconditionally, exactly as the causality axiom on `bg:PowerBond`
+is, and for the same reason: stating only that the thermal port is *not*
+effort-determining would be too weak, since under the open-world assumption that
+leaves it merely unassigned rather than determined. The test suite checks the
+difference.
+
+The thermal module then splits RS into its two cases, and the reasoner tells them
+apart by how many thermal ports they carry: `bgt:DissipativeHeatSource` is defined as
+an RS with exactly one, a resistance in some other domain whose heat goes to a
+thermal body; `bgt:HeatConduction` has two, irreversible transfer down a gradient
+where energy is conserved across the ports while entropy rises.
 
 ### Instances are model variables, not quantity kinds
 
@@ -213,16 +267,18 @@ integrity constraints rather than entailments:
 
 [reasoner-report.md](reasoner-report.md) records, with zero mismatches:
 
-- 17 consistency checks — 8 models consistent as intended, 9 malformed models detected
+- 22 consistency checks — 12 models consistent as intended, 10 malformed models detected
   as inconsistent (two effort sources on a 0-junction; flow source into an integral-causality
   inertia; two species pools on one common-potential node; gyrator with a single causal
   stroke; one port with both causalities; causality on a signal port; a bond with three
   ends; a model variable asserted to be a BFO quality; one quality asserted to be both a
-  force and an electric potential).
+  force and an electric potential; the thermal port of an RS asserted effort-determining).
 - No unsatisfiable classes in the core, the biochemical module, or the BFO bridge
-  under the full IAO + RO import closure (up to 18,408 triples).
-- 27 entailment checks — 20 expected entailments confirmed and 7 expected
-  non-entailments confirmed, via HermiT's `--checkEntailment`.
+  under the full IAO + RO import closure (up to 18,461 triples).
+- 32 entailment checks — 24 expected entailments confirmed and 8 expected
+  non-entailments confirmed, via HermiT's `--checkEntailment`. These include the full
+  causal assignment of a two-element Windkessel, and the classification of an RS
+  element as a dissipative heat source from its port count alone.
 - Structural OWL 2 DL checks: no punning, no undeclared IRIs, and the two non-simple
   properties (`bg:connectsElement`, `bg:bondedTo`, both defined by property chains)
   appear in no cardinality, functionality, disjointness or asymmetry axiom.
@@ -250,7 +306,11 @@ licence, so the split is recorded here.
 ## Known gaps
 
 - Multiport storage fields (`C`- and `I`-fields) and multiport `R`-fields are not
-  modelled; only one-port storage and one- and two-port dissipators.
+  modelled; only one-port storage and one- and two-port dissipators. `bg:DissipativeSource`
+  is likewise restricted to two ports.
+- The electrical and mechanical domains have no element module, deliberately — see
+  "What earns a domain module" above. If a nonlinear component is needed there, that
+  is the point at which a module becomes worth adding.
 - Bond activation (`bg:SignalBond`) is declared but no modulation semantics links a
   signal to the parameter it modulates — `bg:ModulatedElement` is currently defined
   only by the presence of an input signal port.

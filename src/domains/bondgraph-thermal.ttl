@@ -1,0 +1,131 @@
+@prefix bgt:  <https://w3id.org/bondgraph/thermal#> .
+@prefix bg:   <https://w3id.org/bondgraph/core#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix dct:  <http://purl.org/dc/terms/> .
+
+<https://w3id.org/bondgraph/thermal> a owl:Ontology ;
+  owl:versionIRI <https://w3id.org/bondgraph/thermal/0.2.0> ;
+  owl:imports <https://w3id.org/bondgraph/core> ;
+  dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+  dct:title "Bond Graph Ontology -- Thermal Domain"@en ;
+  dct:description """Thermal-domain element specialisations in the power-conjugate
+formulation, where the effort is absolute temperature and the flow is entropy flow
+rate, so that their product is a power.
+
+The thermal domain is the one that forces a change on the rest of the formalism.
+Dissipation anywhere in a model does not destroy energy; it moves it into the
+thermal domain and generates entropy. Representing that needs the RS element
+bg:DissipativeSource rather than a plain R, and this module specialises it into its
+two cases: a resistor coupled to one thermal body, and conduction between two."""@en ;
+  skos:scopeNote """The temperature and heat-flow pair of pseudo bond graphs is NOT
+modelled here. It is not power-conjugate -- its product is not a power -- so it does
+not belong in bg:thermalDomain, and representing it needs a separate pseudo-domain
+and a relaxed power bond."""@en ;
+  rdfs:seeAlso "Karnopp (1978) Pseudo bond graphs for thermal energy transport"@en .
+
+dct:title a owl:AnnotationProperty .
+dct:description a owl:AnnotationProperty .
+dct:license a owl:AnnotationProperty .
+
+################################################################
+# Parameters
+################################################################
+
+bgt:HeatCapacity a owl:Class ;
+  rdfs:subClassOf bg:Capacitance ;
+  rdfs:label "heat capacity"@en ;
+  bg:standardSymbol "C" ;
+  bg:ucumUnit "J/K" ;
+  skos:definition "The entropy a body gains per unit relative rise in its absolute temperature; the capacitance parameter of a thermal storage element."@en .
+
+bgt:ThermalConductance a owl:Class ;
+  rdfs:subClassOf bg:ConstitutiveParameter ;
+  rdfs:label "thermal conductance"@en ;
+  bg:standardSymbol "k" ;
+  bg:ucumUnit "W/K" ;
+  skos:definition "The heat flow driven per unit temperature difference across a conducting path."@en ;
+  skos:editorialNote "Deliberately not placed under bg:Resistance: it is the reciprocal of a resistance, and asserting it as one would misstate the coefficient the constitutive equation uses."@en .
+
+################################################################
+# Storage
+################################################################
+
+bgt:ThermalCapacitance a owl:Class ;
+  rdfs:subClassOf bg:CapacitiveStorage ;
+  rdfs:label "thermal capacitance"@en ;
+  bg:standardSymbol "C" ;
+  skos:definition "A thermal capacitive storage element: a body that accumulates entropy and whose absolute temperature follows from how much it holds."@en ;
+  bg:constitutiveEquation "S = integral of f_S dt ; T = T_ref * exp(S/C)" ;
+  skos:editorialNote "The constitutive relation is exponential, not linear: entropy is the logarithmic measure. A thermal C is therefore not a linear capacitor with different units, which is the main reason this module exists."@en ;
+  bg:causalityRule "Integral causality is effort-out: the element integrates entropy flow and returns a temperature."@en ;
+  rdfs:subClassOf
+    [ a owl:Restriction ; owl:onProperty bg:inEnergyDomain ; owl:hasValue bg:thermalDomain ] ,
+    [ a owl:Restriction ; owl:onProperty bg:hasGeneralizedDisplacement ;
+      owl:allValuesFrom bg:Entropy ] ,
+    [ a owl:Restriction ; owl:onProperty bg:hasParameter ;
+      owl:someValuesFrom bgt:HeatCapacity ] ,
+    [ a owl:Restriction ; owl:onProperty bg:hasConstitutiveRelation ;
+      owl:someValuesFrom bg:NonlinearConstitutiveRelation ] ,
+    [ a owl:Restriction ; owl:onProperty bg:hasPort ;
+      owl:allValuesFrom [ a owl:Class ; owl:unionOf ( bg:SignalPort
+        [ a owl:Restriction ; owl:onProperty bg:inEnergyDomain ; owl:hasValue bg:thermalDomain ] ) ] ] .
+
+################################################################
+# The two cases of the RS element
+################################################################
+
+bgt:DissipativeHeatSource a owl:Class ;
+  rdfs:label "dissipative heat source"@en ;
+  skos:definition "An RS element with exactly one thermal port: a resistance in some other domain, with the heat it produces delivered to a thermal body. What an R element becomes when its losses are tracked."@en ;
+  bg:constitutiveEquation "e_1 = Phi_R(f_1) ; f_S = e_1*f_1/T" ;
+  owl:equivalentClass [ a owl:Class ; owl:intersectionOf ( bg:DissipativeSource
+      [ a owl:Restriction ; owl:onProperty bg:hasPort ;
+        owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+        owl:onClass [ a owl:Class ; owl:intersectionOf ( bg:PowerPort
+          [ a owl:Restriction ; owl:onProperty bg:inEnergyDomain ; owl:hasValue bg:thermalDomain ] ) ] ] ) ] .
+
+bgt:HeatConduction a owl:Class ;
+  rdfs:subClassOf bg:DissipativeSource ;
+  rdfs:label "heat conduction"@en ;
+  skos:definition "An RS element with two thermal ports: irreversible transfer of heat down a temperature gradient. Energy is conserved across the ports while entropy increases, which is why this is an RS and not a transformer."@en ;
+  bg:constitutiveEquation "Q = k*(T_1 - T_2) ; f_S1 = Q/T_1 ; f_S2 = Q/T_2 ; f_S2 >= f_S1" ;
+  rdfs:subClassOf
+    [ a owl:Restriction ; owl:onProperty bg:inEnergyDomain ; owl:hasValue bg:thermalDomain ] ,
+    [ a owl:Restriction ; owl:onProperty bg:hasParameter ;
+      owl:someValuesFrom bgt:ThermalConductance ] ,
+    [ a owl:Restriction ; owl:onProperty bg:hasConstitutiveRelation ;
+      owl:someValuesFrom bg:NonlinearConstitutiveRelation ] ,
+    [ a owl:Restriction ; owl:onProperty bg:hasPort ;
+      owl:qualifiedCardinality "2"^^xsd:nonNegativeInteger ;
+      owl:onClass [ a owl:Class ; owl:intersectionOf ( bg:PowerPort
+        [ a owl:Restriction ; owl:onProperty bg:inEnergyDomain ; owl:hasValue bg:thermalDomain ] ) ] ] ,
+    # Both thermal ports emit entropy: the element is given the two temperatures and
+    # returns the two entropy flows, which differ because the transfer is irreversible.
+    [ a owl:Restriction ; owl:onProperty bg:hasPort ;
+      owl:qualifiedCardinality "2"^^xsd:nonNegativeInteger ;
+      owl:onClass [ a owl:Class ; owl:intersectionOf ( bg:FlowDeterminingPort
+        [ a owl:Restriction ; owl:onProperty bg:inEnergyDomain ; owl:hasValue bg:thermalDomain ] ) ] ] .
+
+# The two cases are disjoint by the number of thermal ports, which the reasoner
+# derives; stating it as well would add nothing.
+
+################################################################
+# Boundary conditions
+################################################################
+
+bgt:ThermalReservoir a owl:Class ;
+  rdfs:subClassOf bg:EffortSource ;
+  rdfs:label "thermal reservoir"@en ;
+  bg:standardSymbol "Se:T" ;
+  skos:definition "A body large enough that exchanging entropy with the system leaves its temperature unchanged: ambient surroundings, a thermostatted bath, arterial blood supplying a perfused tissue."@en ;
+  rdfs:subClassOf
+    [ a owl:Restriction ; owl:onProperty bg:inEnergyDomain ; owl:hasValue bg:thermalDomain ] .
+
+bgt:ThermalNetwork a owl:Class ;
+  rdfs:subClassOf bg:BondGraph ;
+  rdfs:label "thermal network"@en ;
+  skos:definition "A bond graph whose elements are thermal capacitances, conduction paths, dissipative heat sources and reservoirs."@en .

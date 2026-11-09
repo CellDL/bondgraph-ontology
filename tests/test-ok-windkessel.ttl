@@ -1,0 +1,182 @@
+@prefix bg: <https://w3id.org/bondgraph/core#> .
+@prefix ex: <https://w3id.org/bondgraph/tests/ok-windkessel#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<https://w3id.org/bondgraph/tests/ok-windkessel> a owl:Ontology ;
+    rdfs:label "Consistent: a two-element Windkessel in the hydraulic domain"@en ;
+    owl:imports <https://w3id.org/bondgraph/core>,
+        <https://w3id.org/bondgraph/hydraulic> .
+
+ex:wk a owl:NamedIndividual,
+        <https://w3id.org/bondgraph/hydraulic#HydraulicNetwork> ;
+    bg:hasBond ex:b1,
+        ex:b2,
+        ex:b3 ;
+    bg:hasElement ex:C_aorta,
+        ex:J0,
+        ex:R_periph,
+        ex:Sf_inflow .
+
+ex:C_param a owl:NamedIndividual,
+        <https://w3id.org/bondgraph/hydraulic#VascularCompliance> .
+
+ex:R_param a owl:NamedIndividual,
+        <https://w3id.org/bondgraph/hydraulic#LaminarResistance> .
+
+ex:V_aorta a owl:NamedIndividual,
+        bg:Volume ;
+    bg:integralOf ex:f_p_c .
+
+ex:b1 a owl:NamedIndividual,
+        bg:PowerBond ;
+    bg:hasEnd ex:p_j1,
+        ex:p_src ;
+    bg:hasPowerSink ex:p_j1 ;
+    bg:hasPowerSource ex:p_src ;
+    bg:inEnergyDomain bg:hydraulicDomain .
+
+ex:b2 a owl:NamedIndividual,
+        bg:PowerBond ;
+    bg:hasEnd ex:p_c,
+        ex:p_j2 ;
+    bg:hasPowerSink ex:p_c ;
+    bg:hasPowerSource ex:p_j2 ;
+    bg:inEnergyDomain bg:hydraulicDomain .
+
+ex:b3 a owl:NamedIndividual,
+        bg:PowerBond ;
+    bg:hasEnd ex:p_j3,
+        ex:p_r ;
+    bg:hasPowerSink ex:p_r ;
+    bg:hasPowerSource ex:p_j3 ;
+    bg:inEnergyDomain bg:hydraulicDomain .
+
+ex:c_J0 a owl:NamedIndividual,
+        bg:CommonEffortConstraint .
+
+ex:e_p_j1 a owl:NamedIndividual,
+        bg:Pressure ;
+    bg:conjugateTo ex:f_p_j1 ;
+    bg:symbol "e_j1"^^xsd:string .
+
+ex:e_p_j2 a owl:NamedIndividual,
+        bg:Pressure ;
+    bg:conjugateTo ex:f_p_j2 ;
+    bg:symbol "e_j2"^^xsd:string .
+
+ex:e_p_j3 a owl:NamedIndividual,
+        bg:Pressure ;
+    bg:conjugateTo ex:f_p_j3 ;
+    bg:symbol "e_j3"^^xsd:string .
+
+ex:e_p_r a owl:NamedIndividual,
+        bg:Pressure ;
+    bg:conjugateTo ex:f_p_r ;
+    bg:symbol "e_r"^^xsd:string .
+
+ex:e_p_src a owl:NamedIndividual,
+        bg:Pressure ;
+    bg:conjugateTo ex:f_p_src ;
+    bg:symbol "e_src"^^xsd:string .
+
+ex:C_aorta a owl:NamedIndividual,
+        <https://w3id.org/bondgraph/hydraulic#VesselCompliance> ;
+    bg:hasCausalForm bg:integralCausality ;
+    bg:hasGeneralizedDisplacement ex:V_aorta ;
+    bg:hasParameter ex:C_param .
+
+ex:R_periph a owl:NamedIndividual,
+        <https://w3id.org/bondgraph/hydraulic#PoiseuilleResistance> ;
+    bg:hasParameter ex:R_param .
+
+ex:Sf_inflow a owl:NamedIndividual,
+        <https://w3id.org/bondgraph/hydraulic#VolumeFlowSource> .
+
+ex:e_p_c a owl:NamedIndividual,
+        bg:Pressure ;
+    bg:conjugateTo ex:f_p_c ;
+    bg:symbol "e_c"^^xsd:string .
+
+ex:f_p_j1 a owl:NamedIndividual,
+        bg:VolumetricFlowRate ;
+    bg:symbol "f_j1"^^xsd:string .
+
+ex:f_p_j2 a owl:NamedIndividual,
+        bg:VolumetricFlowRate ;
+    bg:symbol "f_j2"^^xsd:string .
+
+ex:f_p_j3 a owl:NamedIndividual,
+        bg:VolumetricFlowRate ;
+    bg:symbol "f_j3"^^xsd:string .
+
+ex:f_p_r a owl:NamedIndividual,
+        bg:VolumetricFlowRate ;
+    bg:symbol "f_r"^^xsd:string .
+
+ex:f_p_src a owl:NamedIndividual,
+        bg:VolumetricFlowRate ;
+    bg:symbol "f_src"^^xsd:string .
+
+ex:p_c a owl:NamedIndividual,
+        bg:PowerPort ;
+    bg:hasEffort ex:e_p_c ;
+    bg:hasFlow ex:f_p_c ;
+    bg:inEnergyDomain bg:hydraulicDomain ;
+    bg:portIndex "0"^^xsd:nonNegativeInteger ;
+    bg:portOf ex:C_aorta .
+
+ex:p_j1 a owl:NamedIndividual,
+        bg:PowerPort ;
+    bg:hasEffort ex:e_p_j1 ;
+    bg:hasFlow ex:f_p_j1 ;
+    bg:inEnergyDomain bg:hydraulicDomain ;
+    bg:portIndex "0"^^xsd:nonNegativeInteger ;
+    bg:portOf ex:J0 .
+
+ex:p_j2 a owl:NamedIndividual,
+        bg:PowerPort ;
+    bg:hasEffort ex:e_p_j2 ;
+    bg:hasFlow ex:f_p_j2 ;
+    bg:inEnergyDomain bg:hydraulicDomain ;
+    bg:portIndex "1"^^xsd:nonNegativeInteger ;
+    bg:portOf ex:J0 .
+
+ex:p_j3 a owl:NamedIndividual,
+        bg:PowerPort ;
+    bg:hasEffort ex:e_p_j3 ;
+    bg:hasFlow ex:f_p_j3 ;
+    bg:inEnergyDomain bg:hydraulicDomain ;
+    bg:portIndex "2"^^xsd:nonNegativeInteger ;
+    bg:portOf ex:J0 .
+
+ex:p_r a owl:NamedIndividual,
+        bg:PowerPort ;
+    bg:hasEffort ex:e_p_r ;
+    bg:hasFlow ex:f_p_r ;
+    bg:inEnergyDomain bg:hydraulicDomain ;
+    bg:portIndex "0"^^xsd:nonNegativeInteger ;
+    bg:portOf ex:R_periph .
+
+ex:p_src a owl:NamedIndividual,
+        bg:PowerPort ;
+    bg:hasEffort ex:e_p_src ;
+    bg:hasFlow ex:f_p_src ;
+    bg:inEnergyDomain bg:hydraulicDomain ;
+    bg:portIndex "0"^^xsd:nonNegativeInteger ;
+    bg:portOf ex:Sf_inflow .
+
+ex:f_p_c a owl:NamedIndividual,
+        bg:VolumetricFlowRate ;
+    bg:symbol "f_c"^^xsd:string .
+
+ex:J0 a owl:NamedIndividual,
+        bg:ZeroJunction ;
+    bg:hasCommonEffort ex:e_p_c ;
+    bg:hasConstitutiveRelation ex:c_J0 .
+
+[] a owl:AllDifferent ;
+    owl:distinctMembers ( ex:wk ex:Sf_inflow ex:C_aorta ex:R_periph ex:J0 ex:c_J0 ex:C_param ex:R_param ex:V_aorta ex:p_src ex:e_p_src ex:f_p_src ex:p_c ex:e_p_c ex:f_p_c ex:p_r ex:e_p_r ex:f_p_r ex:p_j1 ex:e_p_j1 ex:f_p_j1 ex:p_j2 ex:e_p_j2 ex:f_p_j2 ex:p_j3 ex:e_p_j3 ex:f_p_j3 ex:b1 ex:b2 ex:b3 ) .
+

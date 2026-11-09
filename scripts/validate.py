@@ -35,6 +35,8 @@ IRI_TO_FILE = {
     "https://w3id.org/bondgraph/core": ROOT / "src/bondgraph-core.ttl",
     "https://w3id.org/bondgraph/biochem": ROOT / "src/domains/bondgraph-biochem.ttl",
     "https://w3id.org/bondgraph/bfo": ROOT / "src/bondgraph-bfo.ttl",
+    "https://w3id.org/bondgraph/hydraulic": ROOT / "src/domains/bondgraph-hydraulic.ttl",
+    "https://w3id.org/bondgraph/thermal": ROOT / "src/domains/bondgraph-thermal.ttl",
     "https://w3id.org/bondgraph/examples/reaction-chain": ROOT / "examples/reaction-chain.ttl",
     "http://purl.obolibrary.org/obo/iao.owl": ROOT / "imports/iao.owl",
     "http://purl.obolibrary.org/obo/ro.owl": ROOT / "imports/ro.owl",
@@ -123,6 +125,9 @@ RL = Namespace("https://w3id.org/bondgraph/tests/ok-rl-circuit#")
 DC = Namespace("https://w3id.org/bondgraph/tests/ok-derivative-causality#")
 OBO = Namespace("http://purl.obolibrary.org/obo/")
 BGF = Namespace("https://w3id.org/bondgraph/bfo#")
+BGT = Namespace("https://w3id.org/bondgraph/thermal#")
+RS = Namespace("https://w3id.org/bondgraph/tests/ok-rs-entropy#")
+WK = Namespace("https://w3id.org/bondgraph/tests/ok-windkessel#")
 
 # (model file, tag, expected consistency)
 MODELS = [
@@ -143,6 +148,11 @@ MODELS = [
     (ROOT / "tests/test-conflict-variable-as-quality.ttl", "conflict-variable-as-quality", False),
     (ROOT / "tests/test-ok-multidomain-bearer.ttl", "ok-multidomain-bearer", True),
     (ROOT / "tests/test-conflict-effort-kind-clash.ttl", "conflict-effort-kind-clash", False),
+    (ROOT / "src/domains/bondgraph-hydraulic.ttl", "hydraulic", True),
+    (ROOT / "src/domains/bondgraph-thermal.ttl", "thermal", True),
+    (ROOT / "tests/test-ok-rs-entropy.ttl", "ok-rs-entropy", True),
+    (ROOT / "tests/test-conflict-rs-thermal-effort.ttl", "conflict-rs-thermal-effort", False),
+    (ROOT / "tests/test-ok-windkessel.ttl", "ok-windkessel", True),
 ]
 
 # (premise tag, label, conclusion triples, expected entailment)
@@ -201,6 +211,16 @@ ENTAILMENTS = [
      [(BGF.ElectricCurrentProfile, RDFS.subClassOf, OBO["BFO_0000002"])], False),
     ("bfo-bridge", "a conducting body is NOT necessarily a thermal body",
      [(BGF.ConductingBody, RDFS.subClassOf, BGF.ThermalBody)], False),
+    ("ok-rs-entropy", "the RS element is classified as a dissipative heat source",
+     [(RS["RS1"], RDF.type, BGT.DissipativeHeatSource)], True),
+    ("ok-rs-entropy", "its thermal port is flow-determining",
+     [(RS["p_therm"], RDF.type, BG.FlowDeterminingPort)], True),
+    ("ok-windkessel", "the compliance port is effort-determining",
+     [(WK["p_c"], RDF.type, BG.EffortDeterminingPort)], True),
+    ("ok-windkessel", "the junction port facing the compliance is flow-determining",
+     [(WK["p_j2"], RDF.type, BG.FlowDeterminingPort)], True),
+    ("thermal", "heat conduction is NOT a dissipative heat source",
+     [(BGT.HeatConduction, RDFS.subClassOf, BGT.DissipativeHeatSource)], False),
 ]
 
 
@@ -227,7 +247,7 @@ def main():
                      f"| {verdict} {'(ok)' if ok else '(MISMATCH)'} |")
 
     lines.append("\n### Unsatisfiable classes\n")
-    for tag in ("core", "biochem", "bfo-bridge"):
+    for tag in ("core", "biochem", "bfo-bridge", "hydraulic", "thermal"):
         rc, out = hermit("-U", str(prepared[tag]))
         body = [l.strip() for l in out.splitlines() if l.strip().startswith(("owl:", "bg", "http"))]
         extra = [b for b in body if b != "owl:Nothing"]

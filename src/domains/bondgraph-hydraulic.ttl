@@ -1,0 +1,169 @@
+@prefix bgh:  <https://w3id.org/bondgraph/hydraulic#> .
+@prefix bg:   <https://w3id.org/bondgraph/core#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix dct:  <http://purl.org/dc/terms/> .
+
+<https://w3id.org/bondgraph/hydraulic> a owl:Ontology ;
+  owl:versionIRI <https://w3id.org/bondgraph/hydraulic/0.2.0> ;
+  owl:imports <https://w3id.org/bondgraph/core> ;
+  dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+  dct:title "Bond Graph Ontology -- Hydraulic Domain"@en ;
+  dct:description """Hydraulic-domain element specialisations, for lumped models of
+fluid transport: vessel compliance, fluid inertance, laminar and turbulent
+resistance, a one-way valve, and the pressure and flow boundary conditions.
+
+This module exists because these components differ in their constitutive form, not
+merely in their labels. Poiseuille resistance is linear in flow while turbulent
+resistance and a valve are not, and the core cannot distinguish them."""@en ;
+  rdfs:seeAlso "Westerhof, Lankhaar & Westerhof (2009) The arterial Windkessel"@en .
+
+dct:title a owl:AnnotationProperty .
+dct:description a owl:AnnotationProperty .
+dct:license a owl:AnnotationProperty .
+
+################################################################
+# Parameters
+################################################################
+
+bgh:VascularCompliance a owl:Class ;
+  rdfs:subClassOf bg:Capacitance ;
+  rdfs:label "vascular compliance"@en ;
+  bg:standardSymbol "C" ;
+  bg:ucumUnit "m3/Pa" ;
+  skos:definition "The change in contained volume per unit change in transmural pressure."@en .
+
+bgh:FluidInertance a owl:Class ;
+  rdfs:subClassOf bg:Inertance ;
+  rdfs:label "fluid inertance"@en ;
+  bg:standardSymbol "L" ;
+  bg:ucumUnit "Pa.s2/m3" ;
+  skos:definition "The pressure difference required to produce unit rate of change of volumetric flow; the inertia of the fluid column."@en .
+
+bgh:LaminarResistance a owl:Class ;
+  rdfs:subClassOf bg:Resistance ;
+  rdfs:label "laminar hydraulic resistance"@en ;
+  bg:standardSymbol "R" ;
+  bg:ucumUnit "Pa.s/m3" ;
+  skos:definition "The Poiseuille resistance of a cylindrical conduit, 8*mu*L/(pi*r^4)."@en .
+
+bgh:TurbulentResistanceCoefficient a owl:Class ;
+  rdfs:subClassOf bg:Resistance ;
+  rdfs:label "turbulent resistance coefficient"@en ;
+  bg:standardSymbol "K" ;
+  bg:ucumUnit "Pa.s2/m6" ;
+  skos:definition "The coefficient of the quadratic pressure-flow relation used where inertial losses dominate viscous ones."@en .
+
+################################################################
+# Storage
+################################################################
+
+bgh:VesselCompliance a owl:Class ;
+  rdfs:subClassOf bg:CapacitiveStorage ;
+  rdfs:label "vessel compliance"@en ;
+  bg:standardSymbol "C" ;
+  skos:definition "A hydraulic capacitive storage element: an elastic vessel whose transmural pressure rises with the volume it contains."@en ;
+  bg:constitutiveEquation "V = integral of Q dt ; P = (V - V_0)/C" ;
+  bg:causalityRule "Integral causality is effort-out: the element integrates net flow and returns a pressure."@en ;
+  rdfs:subClassOf
+    [ a owl:Restriction ; owl:onProperty bg:inEnergyDomain ; owl:hasValue bg:hydraulicDomain ] ,
+    [ a owl:Restriction ; owl:onProperty bg:hasGeneralizedDisplacement ;
+      owl:allValuesFrom bg:Volume ] ,
+    [ a owl:Restriction ; owl:onProperty bg:hasParameter ;
+      owl:someValuesFrom bgh:VascularCompliance ] ,
+    [ a owl:Restriction ; owl:onProperty bg:hasConstitutiveRelation ;
+      owl:someValuesFrom bg:LinearConstitutiveRelation ] ,
+    [ a owl:Restriction ; owl:onProperty bg:hasPort ;
+      owl:allValuesFrom [ a owl:Class ; owl:unionOf ( bg:SignalPort
+        [ a owl:Restriction ; owl:onProperty bg:inEnergyDomain ; owl:hasValue bg:hydraulicDomain ] ) ] ] .
+
+bgh:FluidInertia a owl:Class ;
+  rdfs:subClassOf bg:InertialStorage ;
+  rdfs:label "fluid inertia"@en ;
+  bg:standardSymbol "L" ;
+  skos:definition "A hydraulic inertial storage element: the momentum of a moving column of fluid."@en ;
+  bg:constitutiveEquation "p_P = integral of (P_1 - P_2) dt ; Q = p_P/L" ;
+  rdfs:subClassOf
+    [ a owl:Restriction ; owl:onProperty bg:inEnergyDomain ; owl:hasValue bg:hydraulicDomain ] ,
+    [ a owl:Restriction ; owl:onProperty bg:hasGeneralizedMomentum ;
+      owl:allValuesFrom bg:PressureMomentum ] ,
+    [ a owl:Restriction ; owl:onProperty bg:hasParameter ;
+      owl:someValuesFrom bgh:FluidInertance ] ,
+    [ a owl:Restriction ; owl:onProperty bg:hasConstitutiveRelation ;
+      owl:someValuesFrom bg:LinearConstitutiveRelation ] .
+
+################################################################
+# Dissipation
+################################################################
+
+bgh:PoiseuilleResistance a owl:Class ;
+  rdfs:subClassOf bg:Resistor ;
+  rdfs:label "Poiseuille resistance"@en ;
+  skos:altLabel "laminar resistance"@en ;
+  skos:definition "A hydraulic resistor whose pressure drop is proportional to volumetric flow, as for fully developed laminar flow in a rigid conduit."@en ;
+  bg:constitutiveEquation "P_1 - P_2 = R*Q" ;
+  rdfs:subClassOf
+    [ a owl:Restriction ; owl:onProperty bg:inEnergyDomain ; owl:hasValue bg:hydraulicDomain ] ,
+    [ a owl:Restriction ; owl:onProperty bg:hasParameter ;
+      owl:someValuesFrom bgh:LaminarResistance ] ,
+    [ a owl:Restriction ; owl:onProperty bg:hasConstitutiveRelation ;
+      owl:someValuesFrom bg:LinearConstitutiveRelation ] .
+
+bgh:TurbulentResistance a owl:Class ;
+  rdfs:subClassOf bg:Resistor ;
+  rdfs:label "turbulent resistance"@en ;
+  skos:definition "A hydraulic resistor whose pressure drop grows with the square of flow, as where inertial losses dominate: a stenosis, an orifice, a bifurcation."@en ;
+  bg:constitutiveEquation "P_1 - P_2 = K*Q*abs(Q)" ;
+  bg:causalityRule "Still causally indifferent: the relation is monotonic in Q and therefore invertible, unlike the exponential relation of a reaction component."@en ;
+  rdfs:subClassOf
+    [ a owl:Restriction ; owl:onProperty bg:inEnergyDomain ; owl:hasValue bg:hydraulicDomain ] ,
+    [ a owl:Restriction ; owl:onProperty bg:hasParameter ;
+      owl:someValuesFrom bgh:TurbulentResistanceCoefficient ] ,
+    [ a owl:Restriction ; owl:onProperty bg:hasConstitutiveRelation ;
+      owl:someValuesFrom bg:NonlinearConstitutiveRelation ] .
+
+bgh:Valve a owl:Class ;
+  rdfs:subClassOf bg:Resistor ;
+  rdfs:label "valve"@en ;
+  skos:definition "A one-way hydraulic resistor: nearly free passage in the forward direction and effectively none in reverse. The cardiac-valve element."@en ;
+  bg:constitutiveEquation "Q = (P_1 - P_2)/R_open if P_1 > P_2, else Q = (P_1 - P_2)/R_closed with R_closed >> R_open" ;
+  bg:causalityRule "Fixed flow-out causality in practice: the switched relation is not invertible at the closing point, so a valve should be given the pressures and asked for the flow."@en ;
+  rdfs:subClassOf
+    [ a owl:Restriction ; owl:onProperty bg:inEnergyDomain ; owl:hasValue bg:hydraulicDomain ] ,
+    [ a owl:Restriction ; owl:onProperty bg:hasConstitutiveRelation ;
+      owl:someValuesFrom bg:NonlinearConstitutiveRelation ] ,
+    [ a owl:Restriction ; owl:onProperty bg:hasPort ;
+      owl:maxQualifiedCardinality "0"^^xsd:nonNegativeInteger ; owl:onClass bg:EffortDeterminingPort ] .
+
+[] a owl:AllDisjointClasses ;
+  owl:members ( bgh:PoiseuilleResistance bgh:TurbulentResistance bgh:Valve ) .
+
+################################################################
+# Boundary conditions
+################################################################
+
+bgh:PressureSource a owl:Class ;
+  rdfs:subClassOf bg:EffortSource ;
+  rdfs:label "pressure source"@en ;
+  bg:standardSymbol "Se:P" ;
+  skos:definition "A prescribed pressure, representing a reservoir or an upstream boundary whose own state the model does not track."@en ;
+  rdfs:subClassOf
+    [ a owl:Restriction ; owl:onProperty bg:inEnergyDomain ; owl:hasValue bg:hydraulicDomain ] .
+
+bgh:VolumeFlowSource a owl:Class ;
+  rdfs:subClassOf bg:FlowSource ;
+  rdfs:label "volume flow source"@en ;
+  bg:standardSymbol "Sf:Q" ;
+  skos:definition "A prescribed volumetric flow, such as a pump output imposed on the model."@en ;
+  rdfs:subClassOf
+    [ a owl:Restriction ; owl:onProperty bg:inEnergyDomain ; owl:hasValue bg:hydraulicDomain ] .
+
+[] a owl:AllDisjointClasses ; owl:members ( bgh:PressureSource bgh:VolumeFlowSource ) .
+
+bgh:HydraulicNetwork a owl:Class ;
+  rdfs:subClassOf bg:BondGraph ;
+  rdfs:label "hydraulic network"@en ;
+  skos:definition "A bond graph whose elements are hydraulic compliances, inertances, resistances and boundary conditions."@en .

@@ -7,29 +7,36 @@ Reasoner: HermiT (bundled with Owlready2 0.51); JVM: jdk4py
 
 | model | triples (with import closure) | expected | HermiT |
 |---|---|---|---|
-| `core` | 1340 | consistent | consistent (ok) |
-| `biochem` | 1522 | consistent | consistent (ok) |
-| `example-reaction-chain` | 1890 | consistent | consistent (ok) |
-| `ok-rl-circuit` | 1528 | consistent | consistent (ok) |
-| `ok-derivative-causality` | 1383 | consistent | consistent (ok) |
-| `conflict-two-effort-sources` | 1457 | inconsistent | INCONSISTENT (ok) |
-| `conflict-sf-into-i` | 1411 | inconsistent | INCONSISTENT (ok) |
-| `conflict-two-species` | 1663 | inconsistent | INCONSISTENT (ok) |
-| `conflict-gyrator-causality` | 1393 | inconsistent | INCONSISTENT (ok) |
-| `conflict-double-causality` | 1373 | inconsistent | INCONSISTENT (ok) |
-| `conflict-signal-causality` | 1377 | inconsistent | INCONSISTENT (ok) |
-| `conflict-bond-three-ends` | 1419 | inconsistent | INCONSISTENT (ok) |
-| `bfo-bridge` | 18039 | consistent | consistent (ok) |
-| `ok-bfo-example` | 18407 | consistent | consistent (ok) |
-| `conflict-variable-as-quality` | 18408 | inconsistent | INCONSISTENT (ok) |
-| `ok-multidomain-bearer` | 18056 | consistent | consistent (ok) |
-| `conflict-effort-kind-clash` | 18046 | inconsistent | INCONSISTENT (ok) |
+| `core` | 1393 | consistent | consistent (ok) |
+| `biochem` | 1575 | consistent | consistent (ok) |
+| `example-reaction-chain` | 1943 | consistent | consistent (ok) |
+| `ok-rl-circuit` | 1581 | consistent | consistent (ok) |
+| `ok-derivative-causality` | 1436 | consistent | consistent (ok) |
+| `conflict-two-effort-sources` | 1510 | inconsistent | INCONSISTENT (ok) |
+| `conflict-sf-into-i` | 1464 | inconsistent | INCONSISTENT (ok) |
+| `conflict-two-species` | 1716 | inconsistent | INCONSISTENT (ok) |
+| `conflict-gyrator-causality` | 1446 | inconsistent | INCONSISTENT (ok) |
+| `conflict-double-causality` | 1426 | inconsistent | INCONSISTENT (ok) |
+| `conflict-signal-causality` | 1430 | inconsistent | INCONSISTENT (ok) |
+| `conflict-bond-three-ends` | 1472 | inconsistent | INCONSISTENT (ok) |
+| `bfo-bridge` | 18092 | consistent | consistent (ok) |
+| `ok-bfo-example` | 18460 | consistent | consistent (ok) |
+| `conflict-variable-as-quality` | 18461 | inconsistent | INCONSISTENT (ok) |
+| `ok-multidomain-bearer` | 18109 | consistent | consistent (ok) |
+| `conflict-effort-kind-clash` | 18099 | inconsistent | INCONSISTENT (ok) |
+| `hydraulic` | 1566 | consistent | consistent (ok) |
+| `thermal` | 1525 | consistent | consistent (ok) |
+| `ok-rs-entropy` | 1576 | consistent | consistent (ok) |
+| `conflict-rs-thermal-effort` | 1577 | inconsistent | INCONSISTENT (ok) |
+| `ok-windkessel` | 1765 | consistent | consistent (ok) |
 
 ### Unsatisfiable classes
 
 - `core`: none
 - `biochem`: none
 - `bfo-bridge`: none
+- `hydraulic`: none
+- `thermal`: none
 
 ## Entailment tests
 
@@ -62,6 +69,11 @@ Reasoner: HermiT (bundled with Owlready2 0.51); JVM: jdk4py
 | `bfo-bridge` | entropy flow rate is a profile of a heat transfer process | entailed | entailed (ok) |
 | `bfo-bridge` | an electric current is NOT a BFO continuant | not entailed | not entailed (ok) |
 | `bfo-bridge` | a conducting body is NOT necessarily a thermal body | not entailed | not entailed (ok) |
+| `ok-rs-entropy` | the RS element is classified as a dissipative heat source | entailed | entailed (ok) |
+| `ok-rs-entropy` | its thermal port is flow-determining | entailed | entailed (ok) |
+| `ok-windkessel` | the compliance port is effort-determining | entailed | entailed (ok) |
+| `ok-windkessel` | the junction port facing the compliance is flow-determining | entailed | entailed (ok) |
+| `thermal` | heat conduction is NOT a dissipative heat source | not entailed | not entailed (ok) |
 
 ## OWL 2 DL structural checks
 
@@ -69,7 +81,7 @@ Targeted checks on punning and on non-simple properties in simple-only axioms; s
 
 ### `bondgraph-core.ttl`
 
-- triples: 1349
+- triples: 1402
 - non-simple object properties (chain or transitive): bondedTo, connectsElement
 - illegal punning: none
 - non-simple property in a simple-only axiom: none
@@ -78,7 +90,7 @@ Targeted checks on punning and on non-simple properties in simple-only axioms; s
 
 ### `bondgraph-core.ttl` + `bondgraph-biochem.ttl`
 
-- triples: 1539
+- triples: 1592
 - non-simple object properties (chain or transitive): bondedTo, connectsElement
 - illegal punning: none
 - non-simple property in a simple-only axiom: none
@@ -87,11 +99,20 @@ Targeted checks on punning and on non-simple properties in simple-only axioms; s
 
 ### the two modules + `bondgraph-bfo.ttl`
 
-- triples: 2131
+- triples: 2184
 - non-simple object properties (chain or transitive): bondedTo, connectsElement
 - illegal punning: none
 - non-simple property in a simple-only axiom: none
 - IRIs resolved against the import closure: 1331 declared in imports
+- undeclared IRIs in class/property position: none
+
+### core + the hydraulic and thermal domain modules
+
+- triples: 1722
+- non-simple object properties (chain or transitive): bondedTo, connectsElement
+- illegal punning: none
+- non-simple property in a simple-only axiom: none
+- IRIs resolved against the import closure: no imports loaded
 - undeclared IRIs in class/property position: none
 
 **Mismatches: 0**
