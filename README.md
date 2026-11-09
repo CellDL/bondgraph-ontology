@@ -308,11 +308,14 @@ serialisation chosen from the `Accept` header:
 served from <https://celldl.github.io/bondgraph-ontology/>. The same applies to
 `biochem`, `bfo`, `hydraulic` and `thermal`.
 
-**State of play.** Turtle resolution is live. The other three syntaxes need the
-Pages deploy (see below) and a follow-up change to the w3id rules; until both land,
-a request for RDF/XML gets the human-readable page rather than RDF/XML. What it must
-never do is return Turtle labelled as RDF/XML, which is what the first version of
-these rules did and what the w3id reviewer correctly objected to.
+**State of play: the table above is not yet in effect.** Only Turtle resolution
+works. The w3id rules currently in force still match `application/rdf+xml`,
+`application/ld+json` and the N-Triples types and redirect every one of them to the
+Turtle file — the defect the w3id reviewer flagged, confirmed still live by request
+at the time of writing. So a non-Turtle RDF request today returns Turtle under the
+wrong media type; it does not fall through to the human-readable page. Correcting it
+needs the Pages deploy (see below) and a follow-up change to the w3id rules, and
+neither has landed.
 
 **Turtle is the source, not a generated artefact.** The published `.ttl` is a
 verbatim copy of the hand-authored file under `src/`, because that is where the
