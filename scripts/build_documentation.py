@@ -95,8 +95,10 @@ def generate_widoco_docs(onto_path: str, out_dir: str):
         webvowl_hide_sidebar_sections(output_path)
 
     except subprocess.CalledProcessError as e:
-        print("Widoco execution failed:")
-        print(e)
+        # Re-raised rather than swallowed: a caller running this in CI must see a
+        # non-zero exit, or a failed documentation build publishes silently.
+        print(f"Widoco execution failed (exit {e.returncode}) for {onto_path}")
+        raise
 
 #===============================================================================
 

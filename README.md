@@ -18,8 +18,9 @@ with a separate chemical-domain extension for physiological modelling.
 | [build_models.py](scripts/build_models.py) | Generates the exemplar and the test models. |
 | [validate.py](scripts/validate.py) | Resolves imports, runs HermiT, writes the report. |
 | [dl_checks.py](scripts/dl_checks.py) | Structural OWL 2 DL checks (punning, non-simple properties). |
-| [build_serialisations.py](scripts/build_serialisations.py) | Emits RDF/XML, JSON-LD and N-Triples into `dist/`, checking each round-trips. |
-| [build_site.py](scripts/build_site.py) | Assembles the GitHub Pages site from the sources and `dist/`. |
+| [build_documentation.py](scripts/build_documentation.py) | Runs Widoco over one ontology to produce its HTML documentation and WebVOWL visualisation. |
+| [build_site.py](scripts/build_site.py) | Assembles the whole Pages site: Widoco per module, plus the authored Turtle and a `.rdf` alias. |
+| [check_published.py](scripts/check_published.py) | Checks every published syntax is logically equivalent to its authored source, with HermiT. |
 
 Namespaces, all under `https://w3id.org/bondgraph/`: `core#` (`bg:`), `biochem#`
 (`bgb:`), `bfo#` (`bgf:`), `hydraulic#` (`bgh:`) and `thermal#` (`bgt:`). **These
@@ -110,8 +111,9 @@ process would be wrong.
 changed. That is deliberate: the w3id rule maps `/bondgraph/<module>/<version>` onto
 the git tag `v<version>`, so a module whose version drifted from the repository's
 would resolve to a tag that does not contain it. Version 0.2.0 added the hydraulic and
-thermal modules and the RS element; 0.3.0 adds the generated serialisations in
-`dist/`. Earlier tags remain resolvable and still hold what they shipped with.
+thermal modules and the RS element; 0.3.0 adds the generated serialisations; 0.4.0
+replaces them with Widoco-generated documentation and serialisations. Earlier tags
+remain resolvable and still hold what they shipped with.
 
 **Version pinning.** `bfo.owl` resolves to the 2019-08-26 release, which declares
 classes only and no object properties, so every relation comes from IAO
@@ -299,32 +301,55 @@ serialisation chosen from the `Accept` header:
 
 | `Accept` | `https://w3id.org/bondgraph/core` resolves to |
 | --- | --- |
-| `text/turtle`, `application/x-turtle`, `text/n3` | `bondgraph-core.ttl` |
-| `application/rdf+xml` | `bondgraph-core.rdf` |
-| `application/ld+json` | `bondgraph-core.jsonld` |
-| `application/n-triples`, `application/n-quads` | `bondgraph-core.nt` |
-| anything else, browsers included | the site index |
+| `text/turtle`, `application/x-turtle`, `text/n3` | `core/ontology.ttl` |
+| `application/rdf+xml` | `core/ontology.rdf` |
+| `application/ld+json` | `core/ontology.jsonld` |
+| `application/n-triples`, `application/n-quads` | `core/ontology.nt` |
+| anything else, browsers included | `core/` — the generated documentation |
 
 served from <https://celldl.github.io/bondgraph-ontology/>. The same applies to
-`biochem`, `bfo`, `hydraulic` and `thermal`.
+`biochem`, `bfo`, `hydraulic` and `thermal`. A browser following a module IRI now
+lands on that module's documentation page rather than a bare index.
 
-**State of play: the table above is not yet in effect.** Only Turtle resolution
-works. The w3id rules currently in force still match `application/rdf+xml`,
-`application/ld+json` and the N-Triples types and redirect every one of them to the
-Turtle file — the defect the w3id reviewer flagged, confirmed still live by request
-at the time of writing. So a non-Turtle RDF request today returns Turtle under the
-wrong media type; it does not fall through to the human-readable page. Correcting it
-needs the Pages deploy (see below) and a follow-up change to the w3id rules, and
-neither has landed.
+**State of play: per-syntax negotiation is live.** The follow-up w3id change was
+merged on 2026-11-10, and a request for `application/rdf+xml` now returns RDF/XML
+under that media type, confirmed by request. What is not yet live is the last row:
+a browser following a module IRI still lands on the site index rather than that
+module's documentation page, which needs a further w3id change.
+
+The flat filenames those merged rules point at — `bondgraph-core.ttl` and its
+siblings at the site root — are permanent. The canonical copies now live under
+`core/ontology.ttl`, but the site publishes both, because the IRIs already redirect
+to the flat names and a persistent identifier that stops resolving is worse than a
+duplicated file.
 
 **Turtle is the source, not a generated artefact.** The published `.ttl` is a
 verbatim copy of the hand-authored file under `src/`, because that is where the
-comments explaining the axioms live; reserialising it would discard them. The other
-three syntaxes are produced by `scripts/build_serialisations.py`, which parses each
-generated file back and asserts it is isomorphic to its source, so a serialiser that
-drops structure fails the build.
+comments explaining the axioms live. Widoco does reserialise the Turtle, and that
+copy discards every authored comment, so the authored file is written over it.
 
-**Nothing generated is committed.** `dist/` and `site/` are built by CI on every push
+**The other three syntaxes come from Widoco, and are checked, not trusted.** Widoco
+converts through the OWL API, which normalises on the way: a two-member
+`owl:AllDisjointClasses` comes back as `owl:disjointWith`, and declaration triples
+are added for anonymous class expressions. The published graphs are therefore not
+isomorphic to the authored ones — core is 1402 triples in, 1397 out as RDF/XML, 1381
+as JSON-LD, 1484 as N-Triples — so the old isomorphism test would reject correct
+output. `scripts/check_published.py` asks the question that matters instead: it uses
+HermiT to confirm each published syntax entails the authored Turtle *and* is entailed
+by it. All twenty files (five modules, four syntaxes) pass.
+
+That check earns its place. Widoco cannot be told where an imported ontology lives,
+and with `owl:imports <https://w3id.org/bondgraph/core>` unresolved the OWL API
+cannot tell whether `bg:hasPort` is an object or a data property — so it cannot parse
+`exactly 2 hasPort some FlowDeterminingPort` and writes
+`<http://org.semanticweb.owlapi/error#Error1>` in its place. That silently destroyed
+the central causality axiom of the biochemical, hydraulic and thermal modules, in
+their RDF/XML, JSON-LD, N-Triples *and* HTML documentation, while Widoco exited 0.
+`build_site.py` now stages the modules so their imports resolve against the working
+tree, restores the canonical IRIs afterwards, and fails if any error placeholder
+survives.
+
+**Nothing generated is committed.** `site/` is built by CI on every push
 and published to Pages, so they cannot drift from the Turtle. The generated *models*
 under `examples/` and `tests/` are committed, because they are fixtures the reasoner
 report refers to, and CI fails if they differ from what the generator produces.
