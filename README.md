@@ -13,7 +13,7 @@ with a separate chemical-domain extension for physiological modelling.
 | [bondgraph-thermal.ttl](src/domains/bondgraph-thermal.ttl) | Thermal domain: entropy-based thermal capacitance, and the two cases of the RS element. 7 classes, 143 triples. |
 | [bondgraph-bfo.ttl](src/bondgraph-bfo.ttl) | Bridge pinning the ontology to BFO, via IAO and RO. 49 new classes, 1 new object property, 603 triples. |
 | [reaction-chain.ttl](examples/reaction-chain.ttl) | Exemplar model: the reversible chain A ⇌ B ⇌ C, with species B on a shared common-potential node. |
-| [tests/](tests/) | Nine regression models: two well-formed (`test-ok-rl-circuit`, `test-ok-derivative-causality`) and seven deliberately malformed (`test-conflict-*`). The other three consistent models in the validation table are the two ontology modules and the exemplar, which live outside this directory. |
+| [tests/](tests/) | Sixteen regression models: six well-formed (`test-ok-*`) and ten deliberately malformed (`test-conflict-*`). The other six consistent models in the validation table are the five ontology modules and the exemplar, which live outside this directory. |
 | [reasoner-report.md](reasoner-report.md) | HermiT output for every model and entailment test. |
 | [build_models.py](scripts/build_models.py) | Generates the exemplar and the test models. |
 | [validate.py](scripts/validate.py) | Resolves imports, runs HermiT, writes the report. |
