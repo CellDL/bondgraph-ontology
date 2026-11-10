@@ -315,7 +315,7 @@ lands on that module's documentation page rather than a bare index.
 merged on 2026-11-10, and a request for `application/rdf+xml` now returns RDF/XML
 under that media type, confirmed by request. What is not yet live is the last row:
 a browser following a module IRI still lands on the site index rather than that
-module's documentation page, which needs a further w3id change.
+module's documentation page. That needs a further w3id change, filed as perma-id/w3id.org#7143 and not yet merged.
 
 The flat filenames those merged rules point at — `bondgraph-core.ttl` and its
 siblings at the site root — are permanent. The canonical copies now live under
