@@ -9,7 +9,7 @@
 # HermiT's JVM comes from the jdk4py wheel, already a declared dependency, so no
 # separate Java toolchain is needed.
 
-name: validate
+name: publish
 
 on:
   push:
