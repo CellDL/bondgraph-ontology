@@ -19,7 +19,7 @@ WIDCO_VERSION = "1.4.26"
 #===============================================================================
 
 WEBVOWL_IFRAME = '<iframe src="webvowl/index.html"></iframe>'
-WEBVOWL_IN_NEW_WINDOW = f'<h2>Visualization</h2>{WEBVOWL_IFRAME}<a href="webvowl/index.html" target="_window">WebVOWL visualization</a> (opens in a new window)</a>'
+WEBVOWL_IN_NEW_WINDOW = f'<h2>Visualization</h2>{WEBVOWL_IFRAME}<br/>Open <a href="webvowl/index.html" target="_window">visualization</a> in a new window.</a>'
 
 def webvowl_in_new_window(index_file: Path) -> bool:
     if not index_file.is_file():
