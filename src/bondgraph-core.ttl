@@ -12,7 +12,7 @@
 ################################################################
 
 <https://w3id.org/bondgraph/core> a owl:Ontology ;
-  owl:versionIRI <https://w3id.org/bondgraph/core/0.3.0> ;
+  owl:versionIRI <https://w3id.org/bondgraph/core/0.4.0> ;
   dct:title "Bond Graph Ontology Core"@en ;
   dct:description """A domain-neutral OWL 2 DL core for the bond graph formalism: bond
 graphs, power bonds, ports, the standard element set (R, C, I, Se, Sf, TF, GY, 0, 1),

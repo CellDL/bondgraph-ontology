@@ -1,7 +1,8 @@
-# Bond Graph Ontology Core — v0.1.0 draft
+# Bond Graph Ontology — v0.4.0
 
-An OWL 2 DL axiomatisation of the bond graph formalism, written as a standalone core
-with a separate chemical-domain extension for physiological modelling.
+An OWL 2 DL axiomatisation of the bond graph formalism for physiological modelling:
+a standalone core, three domain modules (biochemical, hydraulic, thermal) and a
+bridge to the Basic Formal Ontology.
 
 ## Files
 
